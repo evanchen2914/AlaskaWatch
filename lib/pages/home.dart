@@ -1,3 +1,4 @@
+import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,11 +50,19 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('AlaskaWatch'),
+        title: Text(
+          'AlaskaWatch',
+          style: TextStyle(
+            color: kSecondaryColor,
+          ),
+        ),
         actions: <Widget>[
           currentTabIndex == 0
               ? IconButton(
-                  icon: Icon(Icons.refresh),
+                  icon: Icon(
+                    Icons.refresh,
+                    color: kSecondaryColor,
+                  ),
                   tooltip: 'Refresh',
                   onPressed: () {
                     showToast('Button pressed');
@@ -67,7 +76,9 @@ class _HomePageState extends State<HomePage> {
         children: bottomTabPages,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Theme.of(context).primaryColor,
+        selectedItemColor: kSecondaryColor,
+        unselectedItemColor: Colors.grey[300],
+        backgroundColor: kPrimaryColor,
         items: bottomNavBarTiles,
         currentIndex: currentTabIndex,
         type: BottomNavigationBarType.fixed,
