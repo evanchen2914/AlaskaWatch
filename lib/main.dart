@@ -8,11 +8,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AlaskaWatch',
+      title: kAppName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: kPrimaryColor,
-        accentColor: kSecondaryColor,
+        primaryColor: kAppPrimaryColor,
+        accentColor: kAppSecondaryColor,
       ),
       home: HomePage(),
     );
