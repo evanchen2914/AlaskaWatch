@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
 
-final kPrimaryColor = Color(0xff0F204B);
-final kSecondaryColor = Color(0xffFFB612);
+final kAppName = 'AlaskaWatch';
+final kAppPrimaryColor = Color(0xff0F204B);
+final kAppSecondaryColor = Color(0xffFFB612);
