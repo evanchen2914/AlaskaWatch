@@ -1,5 +1,6 @@
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
+import 'package:alaskawatch/utils/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,7 +11,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   SharedPreferences prefs;
-  bool isLoading = true;
+  bool showSplash = true;
+  bool isLoading = false;
 
   int currentTabIndex = 0;
   List bottomNavBarTiles = [];
@@ -23,7 +25,7 @@ class _HomePageState extends State<HomePage> {
     setUp();
   }
 
-  void setUp() {
+  void setUp() async {
     bottomNavBarTiles = <BottomNavigationBarItem>[
       BottomNavigationBarItem(
         icon: Icon(Icons.home),
@@ -38,10 +40,24 @@ class _HomePageState extends State<HomePage> {
         title: Text('Profile'),
       ),
     ];
+
+    await Future.delayed(Duration(seconds: 3));
+
+    setState(() {
+      showSplash = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (showSplash) {
+      return splashScreen();
+    }
+
+    if (isLoading) {
+      return loadingScreen();
+    }
+
     bottomTabPages = <Widget>[
       homeTabPage(),
       favoritesTabPage(),
@@ -51,9 +67,9 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'AlaskaWatch',
+          kAppName,
           style: TextStyle(
-            color: kSecondaryColor,
+            color: kAppSecondaryColor,
           ),
         ),
         actions: <Widget>[
@@ -61,7 +77,7 @@ class _HomePageState extends State<HomePage> {
               ? IconButton(
                   icon: Icon(
                     Icons.refresh,
-                    color: kSecondaryColor,
+                    color: kAppSecondaryColor,
                   ),
                   tooltip: 'Refresh',
                   onPressed: () {
@@ -76,9 +92,9 @@ class _HomePageState extends State<HomePage> {
         children: bottomTabPages,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: kSecondaryColor,
+        selectedItemColor: kAppSecondaryColor,
         unselectedItemColor: Colors.grey[300],
-        backgroundColor: kPrimaryColor,
+        backgroundColor: kAppPrimaryColor,
         items: bottomNavBarTiles,
         currentIndex: currentTabIndex,
         type: BottomNavigationBarType.fixed,
