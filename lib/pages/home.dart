@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('TerpRoom'),
+        title: Text('AlaskaWatch'),
         actions: <Widget>[
           currentTabIndex == 0
               ? IconButton(
