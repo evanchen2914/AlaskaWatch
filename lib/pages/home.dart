@@ -66,6 +66,8 @@ class _HomePageState extends State<HomePage> {
 
     prefs = await SharedPreferences.getInstance();
 
+    await Future.delayed(Duration(seconds: 3));
+
     setState(() {
       showSplash = false;
     });
