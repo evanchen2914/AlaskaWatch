@@ -1,3 +1,4 @@
+import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -59,18 +60,13 @@ Widget loadingScreen() {
 }
 
 Widget customBox({BuildContext context, Widget child}) {
-  List screenSizes = getScreenSize(context);
-  double statusBarHeight = screenSizes[0];
-  double pageHeight = screenSizes[1];
-  double pageWidth = screenSizes[2];
-  double introPadding = pageWidth * 0.07;
-  double buttonWidth = pageWidth - (introPadding * 2);
+  ScreenSize screenSize = ScreenSize(context);
 
   return Container(
-    padding: EdgeInsets.symmetric(horizontal: introPadding),
+    padding: EdgeInsets.symmetric(horizontal: screenSize.horizontalPadding),
     child: Container(
       height: kAppButtonHeight,
-      width: buttonWidth,
+      width: screenSize.contentWidth,
       decoration: ShapeDecoration(
         shape: RoundedRectangleBorder(
           side: BorderSide(width: 1.0, color: Colors.grey[200]),
