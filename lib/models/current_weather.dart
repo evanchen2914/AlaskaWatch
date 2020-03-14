@@ -4,4 +4,25 @@ import 'package:scoped_model/scoped_model.dart';
 class CurrentWeather extends Model {
   static CurrentWeather getModel(BuildContext context) =>
       ScopedModel.of<CurrentWeather>(context);
+
+  var cityName;
+  var tempCelsius;
+  var weatherIconCode;
+  var weatherCode;
+  var weatherDescription;
+
+  CurrentWeather(Map data) {
+    updateData(data);
+  }
+
+  void updateData(Map data) {
+    cityName = data['city_name'];
+    tempCelsius = data['temp'];
+    Map weather = data['weather'];
+    weatherIconCode = weather['icon'];
+    weatherCode = weather['code'];
+    weatherDescription = weather['description'];
+
+    notifyListeners();
+  }
 }

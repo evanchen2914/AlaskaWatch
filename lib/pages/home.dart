@@ -1,9 +1,13 @@
+import 'package:alaskawatch/models/current_weather.dart';
+import 'package:alaskawatch/models/weather_data.dart';
+import 'package:alaskawatch/pages/search_results.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:alaskawatch/utils/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum LocationPref {
@@ -26,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   List bottomTabPages = [];
 
   TextEditingController searchController = TextEditingController();
+  FocusNode focusNode = FocusNode();
 
   double statusBarHeight;
   double pageHeight;
@@ -66,7 +71,7 @@ class _HomePageState extends State<HomePage> {
 
     prefs = await SharedPreferences.getInstance();
 
-    await Future.delayed(Duration(seconds: 3));
+//    await Future.delayed(Duration(seconds: 3));
 
     setState(() {
       showSplash = false;
@@ -153,6 +158,10 @@ class _HomePageState extends State<HomePage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: headerText('Current Location'),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: headerText('Saved Locations'),
                 ),
               ],
             ),
@@ -272,18 +281,44 @@ class _HomePageState extends State<HomePage> {
         keyboardType: TextInputType.number,
         textAlign: TextAlign.left,
         cursorColor: kAppPrimaryColor,
+        focusNode: focusNode,
         onSubmitted: (value) async {
-//          setState(() {
-//            showLoading = true;
-//          });
+          if (value.length != 5) {
+            FocusScope.of(context).requestFocus(focusNode);
+            return showToast('Zip must be 5 digits');
+          }
 
-          var val = await getWeatherJson(value);
+          setState(() {
+            showLoading = true;
+          });
 
-          qq(val.toString());
+          var weatherData = await getWeatherData(zip: value).catchError((e) {
+            setState(() {
+              showLoading = false;
+              showToast(e.toString());
+            });
+          });
 
-//          setState(() {
-//            showLoading=false;
-//          });
+          if (weatherData != null) {
+            setState(() {
+              showLoading = false;
+            });
+
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) {
+                  return ScopedModel<WeatherData>(
+                    model: weatherData,
+                    child: SearchResults(),
+                  );
+                },
+              ),
+            );
+          } else {
+            setState(() {
+              showLoading = false;
+            });
+          }
         },
         decoration: InputDecoration(
           hintText: 'Search by Zip',

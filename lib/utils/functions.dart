@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:alaskawatch/models/current_weather.dart';
+import 'package:alaskawatch/models/forecast.dart';
+import 'package:alaskawatch/models/weather_data.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -31,28 +34,81 @@ List getScreenSize(BuildContext context) {
 
 isNumeric(string) => num.tryParse(string) != null;
 
-Future<dynamic> getWeatherJson(String zip) async {
-  String forecastUrl = 'https://api.weatherbit.io/v2.0/forecast/daily?'
+Future<dynamic> getDataFromWeatherbit(
+    {String zip, WeatherType weatherType}) async {
+  if (!isNumeric(zip)) {
+    throw 'Invalid zip code';
+  }
+
+  String type;
+
+  if (weatherType == WeatherType.current) {
+    type = 'current';
+  } else if (weatherType == WeatherType.forecast) {
+    type = 'forecast/daily';
+  }
+
+  String url = 'https://api.weatherbit.io/v2.0/$type?'
       'postal_code=$zip'
       '&country=US'
       '&key=$kWeatherKey';
 
-  http.Response response = await http.get(forecastUrl);
+  debugPrint('Getting data from url: $url');
+
+  http.Response response = await http.get(url);
   String value = response.body;
 
   try {
     Map<String, dynamic> decodedJson = json.decode(value);
-    List<dynamic> subjects = decodedJson['data'];
 
-    showToast(subjects.toString());
+    if (decodedJson == null || decodedJson.isEmpty) {
+      throw kWeatherDataError;
+    }
 
-    return subjects;
+    if (weatherType == WeatherType.current) {
+      Map data = decodedJson['data'][0];
+
+      if (data == null || data.isEmpty) {
+        throw kWeatherDataError;
+      }
+
+      return CurrentWeather(data);
+    } else if (weatherType == WeatherType.forecast) {
+      List data = decodedJson['data'];
+
+      if (data == null || data.isEmpty) {
+        throw kWeatherDataError;
+      }
+
+      return Forecast(decodedJson);
+    }
+
+    throw kWeatherDataError;
   } catch (e) {
-    showToast('Error getting weather data');
+    throw kWeatherDataError;
   }
+}
 
-//  Map<String, dynamic> decodedJson = json.decode(value);
-//  List<dynamic> subjects = decodedJson['data'];
-//
-//  return subjects;
+Future<dynamic> getWeatherData({String zip}) async {
+  try {
+    var current =
+        await getDataFromWeatherbit(zip: zip, weatherType: WeatherType.current)
+            .catchError((e) {
+      throw kWeatherDataError;
+    });
+
+    var forecast =
+        await getDataFromWeatherbit(zip: zip, weatherType: WeatherType.forecast)
+            .catchError((e) {
+      throw kWeatherDataError;
+    });
+
+    if (current != null && forecast != null) {
+      return WeatherData(currentWeather: current, forecast: forecast);
+    } else {
+      throw kWeatherDataError;
+    }
+  } catch (e) {
+    throw kWeatherDataError;
+  }
 }
