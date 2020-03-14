@@ -8,6 +8,8 @@ final kAppTertiaryColor = Color(0xffDBDDE4);
 final kAppBorderRadius = 5.0;
 final kAppButtonHeight = 47.0;
 final kAppBackButtonSize = 32.0;
+final kAppVerticalPadding = 20.0;
+final kAppHorizontalPaddingFactor = 0.07;
 final kWeatherDataError = 'Error getting weather data';
 
 enum WeatherType {

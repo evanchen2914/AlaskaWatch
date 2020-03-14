@@ -1,4 +1,5 @@
 import 'package:alaskawatch/models/current_weather.dart';
+import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/weather_data.dart';
 import 'package:alaskawatch/pages/search_results.dart';
 import 'package:alaskawatch/utils/constants.dart';
@@ -21,6 +22,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  ScreenSize screenSize;
   SharedPreferences prefs;
   bool showSplash = true;
   bool showLoading = false;
@@ -31,13 +33,6 @@ class _HomePageState extends State<HomePage> {
 
   TextEditingController searchController = TextEditingController();
   FocusNode focusNode = FocusNode();
-
-  double statusBarHeight;
-  double pageHeight;
-  double pageWidth;
-  double horizontalPadding;
-  double verticalPadding = 20.0;
-  double buttonWidth;
 
   @override
   void initState() {
@@ -88,12 +83,7 @@ class _HomePageState extends State<HomePage> {
       return loadingScreen();
     }
 
-    List screenSizes = getScreenSize(context);
-    statusBarHeight = screenSizes[0];
-    pageHeight = screenSizes[1];
-    pageWidth = screenSizes[2];
-    horizontalPadding = pageWidth * 0.07;
-    buttonWidth = pageWidth - (horizontalPadding * 2);
+    screenSize = ScreenSize(context);
 
     bottomTabPages = <Widget>[
       homeTabPage(),
@@ -146,7 +136,7 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: EdgeInsets.only(top: verticalPadding),
+        padding: EdgeInsets.only(top: kAppVerticalPadding),
         child: RefreshIndicator(
           color: kAppPrimaryColor,
           onRefresh: refresh,
@@ -156,11 +146,13 @@ class _HomePageState extends State<HomePage> {
               children: <Widget>[
                 searchBar(),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: screenSize.horizontalPadding),
                   child: headerText('Current Location'),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: screenSize.horizontalPadding),
                   child: headerText('Saved Locations'),
                 ),
               ],
@@ -213,7 +205,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: horizontalPadding,
+          horizontal: screenSize.horizontalPadding,
         ),
         child: ScrollConfiguration(
           behavior: RemoveScrollGlow(),
@@ -271,7 +263,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget searchBar() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      margin: EdgeInsets.symmetric(horizontal: screenSize.horizontalPadding),
       child: TextField(
         controller: searchController,
         inputFormatters: [

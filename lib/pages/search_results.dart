@@ -1,4 +1,5 @@
 import 'package:alaskawatch/models/current_weather.dart';
+import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/weather_data.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
@@ -11,11 +12,8 @@ class SearchResults extends StatefulWidget {
 }
 
 class _SearchResultsState extends State<SearchResults> {
+  ScreenSize screenSize;
   WeatherData weatherData;
-
-  double statusBarHeight;
-  double pageHeight;
-  double pageWidth;
 
   @override
   void initState() {
@@ -26,10 +24,7 @@ class _SearchResultsState extends State<SearchResults> {
 
   @override
   Widget build(BuildContext context) {
-    List screenSizes = getScreenSize(context);
-    statusBarHeight = screenSizes[0];
-    pageHeight = screenSizes[1];
-    pageWidth = screenSizes[2];
+    screenSize = ScreenSize(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -47,6 +42,7 @@ class _SearchResultsState extends State<SearchResults> {
       body: ScrollConfiguration(
         behavior: RemoveScrollGlow(),
         child: ListView(
+          padding: EdgeInsets.symmetric(vertical: kAppVerticalPadding),
           children: <Widget>[
             Text(weatherData.forecast.timezone),
           ],
