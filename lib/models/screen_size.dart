@@ -7,6 +7,7 @@ class ScreenSize {
   double pageHeight;
   double pageWidth;
   double horizontalPadding;
+  double verticalPadding = 30;
   double contentWidth;
 
   ScreenSize(BuildContext context) {
