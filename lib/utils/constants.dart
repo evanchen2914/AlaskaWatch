@@ -12,6 +12,12 @@ final kAppVerticalPadding = 20.0;
 final kAppHorizontalPaddingFactor = 0.07;
 final kWeatherDataError = 'Error getting weather data';
 
+// Shared Preferences keys
+final kPrefsRecentSearches = 'recent_searches';
+final kPrefsCurrent = 'current';
+final kPrefsHome = 'home';
+final kPrefsWork = 'work';
+
 enum WeatherType {
   current,
   forecast,

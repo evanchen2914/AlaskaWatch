@@ -1,4 +1,5 @@
 import 'package:alaskawatch/models/current_weather.dart';
+import 'package:share/share.dart';
 import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/weather_data.dart';
 import 'package:alaskawatch/utils/constants.dart';
@@ -22,6 +23,20 @@ class _SearchResultsState extends State<SearchResults> {
     weatherData = WeatherData.getModel(context);
   }
 
+  Future<void> refresh() async {
+    var updated = await getWeatherData(zip: weatherData.zip).catchError((e) {
+      showToast(e.toString());
+    });
+
+    if (updated != null) {
+      setState(() {
+        weatherData = updated;
+      });
+    } else {
+      showToast(kWeatherDataError);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     screenSize = ScreenSize(context);
@@ -32,20 +47,43 @@ class _SearchResultsState extends State<SearchResults> {
           color: kAppSecondaryColor,
         ),
         title: Text(
-          kAppName,
+          weatherData.zip,
           style: TextStyle(
             color: kAppSecondaryColor,
           ),
         ),
         centerTitle: true,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.share),
+            tooltip: 'Share forecast',
+            onPressed: () {
+              Share.share(
+                  'Here\'s the forecast! '
+                  'https://weather.com/weather/tenday/l/${weatherData.zip}:4:US',
+                  subject: 'forecast');
+            },
+          ),
+        ],
       ),
-      body: ScrollConfiguration(
-        behavior: RemoveScrollGlow(),
-        child: ListView(
-          padding: EdgeInsets.symmetric(vertical: kAppVerticalPadding),
-          children: <Widget>[
-            Text(weatherData.forecast.timezone),
-          ],
+      body: RefreshIndicator(
+        color: kAppPrimaryColor,
+        onRefresh: refresh,
+        child: ScrollConfiguration(
+          behavior: RemoveScrollGlow(),
+          child: ListView(
+            padding: EdgeInsets.symmetric(vertical: kAppVerticalPadding),
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenSize.horizontalPadding),
+                child: currentWeatherCard(
+                  currentWeather: weatherData.currentWeather,
+                  context: context,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

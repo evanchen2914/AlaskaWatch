@@ -1,3 +1,6 @@
+import 'package:alaskawatch/models/user.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/weather_data.dart';
@@ -22,6 +25,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  User user;
   ScreenSize screenSize;
   SharedPreferences prefs;
   bool showSplash = true;
@@ -33,6 +37,7 @@ class _HomePageState extends State<HomePage> {
 
   TextEditingController searchController = TextEditingController();
   FocusNode focusNode = FocusNode();
+  bool keyboardVisible = false;
 
   @override
   void initState() {
@@ -64,9 +69,22 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
 
+    user = User();
+
     prefs = await SharedPreferences.getInstance();
 
-//    await Future.delayed(Duration(seconds: 3));
+    if (prefs.containsKey(kPrefsRecentSearches)) {
+      var recentSearches = prefs.getStringList(kPrefsRecentSearches);
+      user.updateData(recentSearches: recentSearches);
+    }
+
+    KeyboardVisibilityNotification().addNewListener(
+      onChange: (bool visible) {
+        setState(() {
+          keyboardVisible = visible;
+        });
+      },
+    );
 
     setState(() {
       showSplash = false;
@@ -262,91 +280,159 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget searchBar() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: screenSize.horizontalPadding),
-      child: TextField(
-        controller: searchController,
-        inputFormatters: [
-          LengthLimitingTextInputFormatter(5),
-        ],
-        textInputAction: TextInputAction.search,
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.left,
-        cursorColor: kAppPrimaryColor,
-        focusNode: focusNode,
-        onSubmitted: (value) async {
-          if (value.length != 5) {
-            FocusScope.of(context).requestFocus(focusNode);
-            return showToast('Zip must be 5 digits');
-          }
+    double rowHeight = 50;
+    Color iconColor = Colors.grey[500];
 
-          setState(() {
-            showLoading = true;
-          });
+    List<Widget> widgets = [
+      Container(
+        height: rowHeight,
+        child: TextField(
+          controller: searchController,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(5),
+          ],
+          textInputAction: TextInputAction.search,
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.left,
+          cursorColor: kAppPrimaryColor,
+          focusNode: focusNode,
+          onSubmitted: (value) async {
+            if (value.length != 5) {
+              FocusScope.of(context).requestFocus(focusNode);
+              return showToast('Zip must be 5 digits');
+            }
 
-          var weatherData = await getWeatherData(zip: value).catchError((e) {
-            setState(() {
-              showLoading = false;
-              showToast(e.toString());
-            });
-          });
-
-          if (weatherData != null) {
-            setState(() {
-              showLoading = false;
-            });
-
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) {
-                  return ScopedModel<WeatherData>(
-                    model: weatherData,
-                    child: SearchResults(),
-                  );
-                },
+            navToSearchResults(value);
+          },
+          decoration: InputDecoration(
+            hintText: 'Search by Zip',
+            hintStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+            prefixIcon: Icon(Icons.search),
+            suffixIcon: InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onTap: () {
+                setState(() {
+                  searchController.clear();
+//                  FocusScope.of(context).requestFocus(FocusNode());
+                });
+              },
+              child: Icon(Icons.close),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(kAppBorderRadius),
+              borderSide: BorderSide(
+                color: Colors.grey[400],
+                width: 2.5,
               ),
-            );
-          } else {
-            setState(() {
-              showLoading = false;
-            });
-          }
-        },
-        decoration: InputDecoration(
-          hintText: 'Search by Zip',
-          hintStyle: TextStyle(
-            fontWeight: FontWeight.w600,
-          ),
-          prefixIcon: Icon(Icons.search),
-          suffixIcon: InkWell(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () {
-              setState(() {
-                searchController.clear();
-                FocusScope.of(context).requestFocus(FocusNode());
-              });
-            },
-            child: Icon(Icons.close),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(kAppBorderRadius),
-            borderSide: BorderSide(
-              color: Colors.grey[400],
-              width: 2.5,
             ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(kAppBorderRadius),
-            borderSide: BorderSide(
-              color: kAppPrimaryColor,
-              width: 2.5,
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(kAppBorderRadius),
+              borderSide: BorderSide(
+                color: kAppPrimaryColor,
+                width: 2.5,
+              ),
             ),
+            contentPadding: EdgeInsets.all(0),
           ),
-          contentPadding: EdgeInsets.all(0),
-//                  suffixText: zipCodeLocation,
         ),
       ),
+    ];
+
+    if (user.recentSearches.isNotEmpty && keyboardVisible) {
+      for (var zip in user.recentSearches) {
+        widgets.add(
+          InkWell(
+            onTap: () {
+              navToSearchResults(zip);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              height: rowHeight,
+              child: Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.restore,
+                    color: iconColor,
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      zip,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        user.removeRecentSearch(zip);
+                        prefs.setStringList(
+                            kPrefsRecentSearches, user.recentSearches);
+                      });
+                    },
+                    child: Icon(
+                      Icons.delete,
+                      color: iconColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Container(
+      height: keyboardVisible
+          ? rowHeight + rowHeight * user.recentSearches.length
+          : rowHeight,
+      margin: EdgeInsets.symmetric(horizontal: screenSize.horizontalPadding),
+      child: Column(
+        children: widgets,
+      ),
     );
+  }
+
+  void navToSearchResults(String zip) async {
+    setState(() {
+      showLoading = true;
+    });
+
+    var weatherData = await getWeatherData(zip: zip).catchError((e) {
+      setState(() {
+        showLoading = false;
+        showToast(e.toString());
+      });
+    });
+
+    if (weatherData != null) {
+      user.addRecentSearch(zip);
+      prefs.setStringList(kPrefsRecentSearches, user.recentSearches);
+
+      setState(() {
+        showLoading = false;
+      });
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) {
+            return ScopedModel<WeatherData>(
+              model: weatherData,
+              child: SearchResults(),
+            );
+          },
+        ),
+      );
+    } else {
+      setState(() {
+        showLoading = false;
+      });
+    }
   }
 }

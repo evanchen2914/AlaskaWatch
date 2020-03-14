@@ -1,5 +1,7 @@
+import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/utils/constants.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -84,6 +86,69 @@ Widget customBox({BuildContext context, Widget child}) {
         ],
       ),
       child: child,
+    ),
+  );
+}
+
+Widget currentWeatherCard(
+    {BuildContext context, CurrentWeather currentWeather}) {
+  return Container(
+    height: 200,
+    padding: EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey[200],
+          spreadRadius: 4,
+          blurRadius: 5,
+        ),
+      ],
+      border: Border.all(color: kAppPrimaryColor, width: 2.5),
+      borderRadius: BorderRadius.circular(kAppBorderRadius),
+    ),
+    child: Column(
+      children: <Widget>[
+        Container(
+          alignment: Alignment.topLeft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                '${currentWeather?.cityName}, ${currentWeather?.stateCode}',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              SizedBox(height: 5),
+              Text(
+                currentWeather?.weatherDescription?.toString(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Row(
+          children: <Widget>[
+            CachedNetworkImage(
+              imageUrl: getWeatherIconUrl(currentWeather?.weatherIconCode),
+              fit: BoxFit.cover,
+            ),
+            Text(
+              celsiusToFahrenheit(currentWeather?.tempCelsius),
+              style: TextStyle(
+                fontSize: 50,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ],
+        ),
+      ],
     ),
   );
 }

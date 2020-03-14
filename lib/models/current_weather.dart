@@ -6,6 +6,7 @@ class CurrentWeather extends Model {
       ScopedModel.of<CurrentWeather>(context);
 
   var cityName;
+  var stateCode;
   var tempCelsius;
   var weatherIconCode;
   var weatherCode;
@@ -17,6 +18,7 @@ class CurrentWeather extends Model {
 
   void updateData(Map data) {
     cityName = data['city_name'];
+    stateCode = data['state_code'];
     tempCelsius = data['temp'];
     Map weather = data['weather'];
     weatherIconCode = weather['icon'];

@@ -104,11 +104,35 @@ Future<dynamic> getWeatherData({String zip}) async {
     });
 
     if (current != null && forecast != null) {
-      return WeatherData(currentWeather: current, forecast: forecast);
+      return WeatherData(zip: zip, currentWeather: current, forecast: forecast);
     } else {
       throw kWeatherDataError;
     }
   } catch (e) {
     throw kWeatherDataError;
   }
+}
+
+String getWeatherIconUrl(String iconCode) {
+  return 'https://www.weatherbit.io/static/img/icons/$iconCode.png';
+}
+
+String celsiusToFahrenheit(var temp) {
+  if (temp == null) {
+    return null;
+  }
+
+  double celsiusTemp;
+
+  if (temp is String) {
+    celsiusTemp = double.parse(temp);
+  } else if (temp is int) {
+    celsiusTemp = temp.toDouble();
+  } else if (temp is double) {
+    celsiusTemp = temp;
+  }
+
+  double tempFahrenheit = celsiusTemp * (9.0 / 5.0) + 32;
+
+  return '${tempFahrenheit?.round()}°';
 }
