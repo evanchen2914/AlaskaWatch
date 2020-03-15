@@ -187,7 +187,32 @@ class _HomePageState extends State<HomePage> {
       showLoading = true;
     });
 
-    await Future.delayed(Duration(seconds: 2));
+    if (user.currentZip != null && user.currentZip.isNotEmpty) {
+      var weatherData =
+          await getWeatherData(zip: user.currentZip).catchError((e) {});
+
+      if (weatherData != null) {
+        user.updateData(currentWeatherData: weatherData);
+      }
+    }
+
+    if (user.homeZip != null && user.homeZip.isNotEmpty) {
+      var weatherData =
+          await getWeatherData(zip: user.homeZip).catchError((e) {});
+
+      if (weatherData != null) {
+        user.updateData(homeWeatherData: weatherData);
+      }
+    }
+
+    if (user.workZip != null && user.workZip.isNotEmpty) {
+      var weatherData =
+          await getWeatherData(zip: user.workZip).catchError((e) {});
+
+      if (weatherData != null) {
+        user.updateData(workWeatherData: weatherData);
+      }
+    }
 
     setState(() {
       showLoading = false;
@@ -478,22 +503,6 @@ class _HomePageState extends State<HomePage> {
             color: kAppPrimaryColor,
             fontSize: 25,
             fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget headerText(String text) {
-    return Container(
-      height: 59,
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ),
