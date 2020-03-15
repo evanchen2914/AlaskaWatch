@@ -1,5 +1,10 @@
+import 'dart:ui';
+
+import 'package:alaskawatch/models/settings_edit.dart';
 import 'package:alaskawatch/models/user.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/screen_size.dart';
@@ -14,28 +19,28 @@ import 'package:http/http.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum LocationPref {
-  home,
-  work,
-}
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  User user;
   ScreenSize screenSize;
+  User user;
+  SettingsEdit settingsEdit;
   SharedPreferences prefs;
+
   bool showSplash = true;
   bool showLoading = false;
+  bool showEdit = false;
 
   int currentTabIndex = 0;
   List bottomNavBarTiles = [];
   List bottomTabPages = [];
 
   TextEditingController searchController = TextEditingController();
+  TextEditingController homeController = TextEditingController();
+  TextEditingController workController = TextEditingController();
   FocusNode focusNode = FocusNode();
   bool keyboardVisible = false;
 
@@ -51,6 +56,8 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
 
     searchController?.dispose();
+    homeController?.dispose();
+    workController?.dispose();
   }
 
   void setUp() async {
@@ -69,6 +76,14 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
 
+    KeyboardVisibilityNotification().addNewListener(
+      onChange: (bool visible) {
+        setState(() {
+          keyboardVisible = visible;
+        });
+      },
+    );
+
     user = User();
 
     prefs = await SharedPreferences.getInstance();
@@ -78,13 +93,35 @@ class _HomePageState extends State<HomePage> {
       user.updateData(recentSearches: recentSearches);
     }
 
-    KeyboardVisibilityNotification().addNewListener(
-      onChange: (bool visible) {
-        setState(() {
-          keyboardVisible = visible;
-        });
-      },
-    );
+    if (prefs.containsKey(kPrefsCurrent)) {
+      var current = prefs.getString(kPrefsCurrent);
+      user.updateData(current: current);
+    }
+
+    if (prefs.containsKey(kPrefsHome)) {
+      var home = prefs.getString(kPrefsHome);
+      user.updateData(home: home);
+    }
+
+    if (prefs.containsKey(kPrefsWork)) {
+      var work = prefs.getString(kPrefsWork);
+      user.updateData(work: work);
+    }
+
+    /// set to true to skip location
+//    bool testMode = true;
+    bool testMode = false;
+
+    Position position = await getUserLocation(testMode: testMode);
+
+    String zip = await getZipFromPosition(position).catchError((e) {
+      showToast(kCurrentLocationError);
+    });
+
+    if (zip != null) {
+      prefs.setString(kPrefsCurrent, zip);
+      user.updateData(current: zip);
+    }
 
     setState(() {
       showSplash = false;
@@ -193,9 +230,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget profileTabPage() {
-    Widget locationPrefEditTile({LocationPref pref, String text}) {
+    Widget locationPrefBox({Widget child}) {
       return Container(
-        height: 200,
+        height: 55,
+        padding: EdgeInsets.symmetric(horizontal: 15),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
@@ -205,22 +243,121 @@ class _HomePageState extends State<HomePage> {
               blurRadius: 5,
             ),
           ],
-          border: Border.all(color: kAppPrimaryColor, width: 2.5),
+          border: Border.all(
+            color: showEdit ? Colors.grey[300] : kAppPrimaryColor,
+            width: 2,
+          ),
           borderRadius: BorderRadius.circular(kAppBorderRadius),
         ),
-        child: Center(
-          child: Text(
-            '$text',
+        child: child,
+      );
+    }
+
+    Widget locationPrefTextField(
+        {TextEditingController controller, String type}) {
+      double fontSize = 18.0;
+
+      return Row(
+        children: <Widget>[
+          Text(
+            type,
             style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
             ),
           ),
+          SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w300,
+              ),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(5),
+              ],
+              textInputAction: TextInputAction.search,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.left,
+              cursorColor: kAppPrimaryColor,
+              decoration: InputDecoration(
+                hintText: 'Zip code',
+                hintStyle: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w300,
+                ),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget locationPrefInfo({String zip, String type}) {
+      double fontSize = 18.0;
+
+      return Container(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          children: <Widget>[
+            Text(
+              type,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                zip,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Settings',
+          style: TextStyle(
+            color: kAppSecondaryColor,
+          ),
+        ),
+        leading: showEdit
+            ? IconButton(
+                icon: Icon(
+                  Icons.close,
+                  color: kAppSecondaryColor,
+                ),
+                onPressed: cancelEdit,
+              )
+            : null,
+        actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              if (showEdit) {
+                saveEdit();
+              } else {
+                startEdit();
+              }
+            },
+            icon: Icon(
+              showEdit ? Icons.done : Icons.edit,
+              color: kAppSecondaryColor,
+            ),
+          ),
+        ],
+        centerTitle: true,
+      ),
       body: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: screenSize.horizontalPadding,
@@ -229,16 +366,31 @@ class _HomePageState extends State<HomePage> {
           behavior: RemoveScrollGlow(),
           child: ListView(
             children: <Widget>[
-              headerText('Settings'),
-              locationPrefEditTile(
-                text: 'Home',
-                pref: LocationPref.home,
+              headerText('Location Preferences'),
+              locationPrefBox(
+                child: showEdit
+                    ? locationPrefTextField(
+                        controller: homeController,
+                        type: 'Home',
+                      )
+                    : locationPrefInfo(
+                        zip: '${(user.home) ?? 'Not set'}',
+                        type: 'Home',
+                      ),
               ),
-              SizedBox(height: 30),
-              locationPrefEditTile(
-                text: 'Work',
-                pref: LocationPref.home,
+              SizedBox(height: screenSize.verticalPadding),
+              locationPrefBox(
+                child: showEdit
+                    ? locationPrefTextField(
+                        controller: workController,
+                        type: 'Work',
+                      )
+                    : locationPrefInfo(
+                        zip: '${(user.work) ?? 'Not set'}',
+                        type: 'Work',
+                      ),
               ),
+              SizedBox(height: screenSize.verticalPadding),
             ],
           ),
         ),
@@ -307,7 +459,7 @@ class _HomePageState extends State<HomePage> {
           decoration: InputDecoration(
             hintText: 'Search by Zip',
             hintStyle: TextStyle(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w400,
             ),
             prefixIcon: Icon(Icons.search),
             suffixIcon: InkWell(
@@ -316,7 +468,6 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 setState(() {
                   searchController.clear();
-//                  FocusScope.of(context).requestFocus(FocusNode());
                 });
               },
               child: Icon(Icons.close),
@@ -325,14 +476,14 @@ class _HomePageState extends State<HomePage> {
               borderRadius: BorderRadius.circular(kAppBorderRadius),
               borderSide: BorderSide(
                 color: Colors.grey[400],
-                width: 2.5,
+                width: 2,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(kAppBorderRadius),
               borderSide: BorderSide(
                 color: kAppPrimaryColor,
-                width: 2.5,
+                width: 2,
               ),
             ),
             contentPadding: EdgeInsets.all(0),
@@ -434,5 +585,97 @@ class _HomePageState extends State<HomePage> {
         showLoading = false;
       });
     }
+  }
+
+  void startEdit() {
+    if (showEdit) {
+      return;
+    }
+
+    showEdit = true;
+
+    settingsEdit = SettingsEdit(user: user);
+
+    if (settingsEdit.home != null && settingsEdit.home.isNotEmpty) {
+      homeController = TextEditingController(text: settingsEdit.home);
+    }
+
+    if (settingsEdit.work != null && settingsEdit.work.isNotEmpty) {
+      workController = TextEditingController(text: settingsEdit.work);
+    }
+
+    setState(() {});
+  }
+
+  void saveEdit() async {
+    if (!showEdit) {
+      return;
+    }
+
+    setState(() {
+      showLoading = true;
+    });
+
+    String home = homeController.text;
+    String work = workController.text;
+    var homeWeatherData;
+    var workWeatherData;
+
+    if (home != null && home.isNotEmpty) {
+      homeWeatherData = await getWeatherData(zip: home).catchError((e) {
+        setState(() {
+          showLoading = false;
+          showToast(kInvalidZipCode);
+        });
+
+        return;
+      });
+    }
+
+    if (work != null && work.isNotEmpty) {
+      workWeatherData = await getWeatherData(zip: work).catchError((e) {
+        setState(() {
+          showLoading = false;
+          showToast(kInvalidZipCode);
+        });
+
+        return;
+      });
+    }
+
+    if (home != null && home.isNotEmpty && homeWeatherData != null) {
+      user.updateData(home: home);
+      prefs.setString(kPrefsHome, home);
+    } else {
+      user.updateData(home: null);
+      prefs.remove(kPrefsHome);
+    }
+
+    if (work != null && work.isNotEmpty && workWeatherData != null) {
+      user.updateData(work: work);
+      prefs.setString(kPrefsWork, work);
+    } else {
+      user.updateData(work: null);
+      prefs.remove(kPrefsWork);
+    }
+
+    showToast('Settings saved');
+    FocusScope.of(context).requestFocus(FocusNode());
+    showLoading = false;
+    showEdit = false;
+
+    setState(() {});
+  }
+
+  void cancelEdit() {
+    if (!showEdit) {
+      return;
+    }
+
+    FocusScope.of(context).requestFocus(FocusNode());
+    showEdit = false;
+    homeController.clear();
+    workController.clear();
+    setState(() {});
   }
 }

@@ -11,8 +11,12 @@ class User extends Model {
 
   User();
 
-  void updateData({List<String> recentSearches}) {
+  void updateData(
+      {List<String> recentSearches, String current, String home, String work}) {
     this.recentSearches = []..addAll(recentSearches ?? this.recentSearches);
+    this.current = current ?? this.current;
+    this.home = home ?? this.home;
+    this.work = work ?? this.work;
 
     notifyListeners();
   }

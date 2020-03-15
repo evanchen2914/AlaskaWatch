@@ -104,7 +104,7 @@ Widget currentWeatherCard(
           blurRadius: 5,
         ),
       ],
-      border: Border.all(color: kAppPrimaryColor, width: 2.5),
+      border: Border.all(color: kAppPrimaryColor, width: 2),
       borderRadius: BorderRadius.circular(kAppBorderRadius),
     ),
     child: Column(

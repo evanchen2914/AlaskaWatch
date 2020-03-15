@@ -6,7 +6,10 @@ import 'package:alaskawatch/models/weather_data.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
 
 // testing purposes only
 void qq(String message) {
@@ -135,4 +138,60 @@ String celsiusToFahrenheit(var temp) {
   double tempFahrenheit = celsiusTemp * (9.0 / 5.0) + 32;
 
   return '${tempFahrenheit?.round()}°';
+}
+
+Future<Position> getUserLocation({bool testMode}) async {
+  Position currentLocation;
+
+  GeolocationStatus geolocationStatus =
+      await Geolocator().checkGeolocationPermissionStatus();
+
+  Future<Position> onTimeout() {
+    return null;
+  }
+
+  Future<Position> getLoc() async {
+    int duration = testMode ? 0 : 5;
+
+    return await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .timeout(Duration(seconds: duration), onTimeout: onTimeout);
+  }
+
+  if (geolocationStatus != null) {
+    if (geolocationStatus == GeolocationStatus.granted) {
+      currentLocation = await getLoc();
+    } else {
+      if (geolocationStatus != GeolocationStatus.granted) {
+        Map<PermissionGroup, PermissionStatus> permissions =
+            await PermissionHandler()
+                .requestPermissions([PermissionGroup.location]);
+
+        if (permissions[PermissionGroup.location] == PermissionStatus.granted) {
+          currentLocation = await getLoc();
+        }
+      }
+    }
+
+    return currentLocation ?? null;
+  }
+
+  return currentLocation;
+}
+
+Future<String> getZipFromPosition(Position position) async {
+  final coordinates = Coordinates(position.latitude, position.longitude);
+
+  try {
+    var addresses = await Geocoder.local
+        .findAddressesFromCoordinates(coordinates)
+        .catchError((e) {
+      throw kCurrentLocationError;
+    });
+    var first = addresses.first;
+
+    return first.postalCode;
+  } catch (e) {
+    throw kCurrentLocationError;
+  }
 }
