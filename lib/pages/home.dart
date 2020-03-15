@@ -90,10 +90,12 @@ class _HomePageState extends State<HomePage> {
 
       if (user.favorites != null && user.favorites.isNotEmpty) {
         for (var zip in user.favorites) {
-          var weatherData = await getWeatherData(zip: zip).catchError((e) {});
+          var currentWeather = await getDataFromWeatherbit(
+                  zip: zip, weatherType: WeatherType.current)
+              .catchError((e) {});
 
-          if (weatherData != null) {
-            user.addFavoriteWeatherData(weatherData);
+          if (currentWeather != null) {
+            user.addFavoriteCurrentWeather(currentWeather);
           }
         }
       }
@@ -102,30 +104,36 @@ class _HomePageState extends State<HomePage> {
     if (sharedPrefs.containsKey(kPrefsCurrent)) {
       var current = sharedPrefs.getString(kPrefsCurrent);
       user.updateData(current: current);
-      var weatherData = await getWeatherData(zip: current).catchError((e) {});
+      var currentWeather = await getDataFromWeatherbit(
+              zip: current, weatherType: WeatherType.current)
+          .catchError((e) {});
 
-      if (weatherData != null) {
-        user.updateData(currentWeatherData: weatherData);
+      if (currentWeather != null) {
+        user.updateData(currentWeather: currentWeather);
       }
     }
 
     if (sharedPrefs.containsKey(kPrefsHome)) {
       var home = sharedPrefs.getString(kPrefsHome);
       user.updateData(home: home);
-      var weatherData = await getWeatherData(zip: home).catchError((e) {});
+      var homeWeather = await getDataFromWeatherbit(
+              zip: home, weatherType: WeatherType.current)
+          .catchError((e) {});
 
-      if (weatherData != null) {
-        user.updateData(homeWeatherData: weatherData);
+      if (homeWeather != null) {
+        user.updateData(homeWeather: homeWeather);
       }
     }
 
     if (sharedPrefs.containsKey(kPrefsWork)) {
       var work = sharedPrefs.getString(kPrefsWork);
       user.updateData(work: work);
-      var weatherData = await getWeatherData(zip: work).catchError((e) {});
+      var workWeather = await getDataFromWeatherbit(
+              zip: work, weatherType: WeatherType.current)
+          .catchError((e) {});
 
-      if (weatherData != null) {
-        user.updateData(workWeatherData: weatherData);
+      if (workWeather != null) {
+        user.updateData(workWeather: workWeather);
       }
     }
 
@@ -200,29 +208,32 @@ class _HomePageState extends State<HomePage> {
     });
 
     if (user.currentZip != null && user.currentZip.isNotEmpty) {
-      var weatherData =
-          await getWeatherData(zip: user.currentZip).catchError((e) {});
+      var currentWeather = await getDataFromWeatherbit(
+              zip: user.currentZip, weatherType: WeatherType.current)
+          .catchError((e) {});
 
-      if (weatherData != null) {
-        user.updateData(currentWeatherData: weatherData);
+      if (currentWeather != null) {
+        user.updateData(currentWeather: currentWeather);
       }
     }
 
     if (user.homeZip != null && user.homeZip.isNotEmpty) {
-      var weatherData =
-          await getWeatherData(zip: user.homeZip).catchError((e) {});
+      var homeWeather = await getDataFromWeatherbit(
+              zip: user.homeZip, weatherType: WeatherType.current)
+          .catchError((e) {});
 
-      if (weatherData != null) {
-        user.updateData(homeWeatherData: weatherData);
+      if (homeWeather != null) {
+        user.updateData(homeWeather: homeWeather);
       }
     }
 
     if (user.workZip != null && user.workZip.isNotEmpty) {
-      var weatherData =
-          await getWeatherData(zip: user.workZip).catchError((e) {});
+      var workWeather = await getDataFromWeatherbit(
+              zip: user.workZip, weatherType: WeatherType.current)
+          .catchError((e) {});
 
-      if (weatherData != null) {
-        user.updateData(workWeatherData: weatherData);
+      if (workWeather != null) {
+        user.updateData(workWeather: workWeather);
       }
     }
 
@@ -254,7 +265,7 @@ class _HomePageState extends State<HomePage> {
                 searchBar(),
                 user.currentZip == null ||
                         user.currentZip.isEmpty ||
-                        user.currentWeatherData == null
+                        user.currentWeather == null
                     ? Container()
                     : Padding(
                         padding: EdgeInsets.symmetric(
@@ -265,19 +276,20 @@ class _HomePageState extends State<HomePage> {
                             InkWell(
                               onTap: () {
                                 navToSearchResults(
-                                    weatherData: user.currentWeatherData);
+                                  currentWeather: user.currentWeather,
+                                  zip: user.currentZip,
+                                );
                               },
                               child: currentWeatherCard(
                                   context: context,
-                                  currentWeather:
-                                      user.currentWeatherData.currentWeather),
+                                  currentWeather: user.currentWeather),
                             ),
                           ],
                         ),
                       ),
                 user.homeZip == null ||
                         user.homeZip.isEmpty ||
-                        user.homeWeatherData == null
+                        user.homeWeather == null
                     ? Container()
                     : Padding(
                         padding: EdgeInsets.symmetric(
@@ -288,19 +300,19 @@ class _HomePageState extends State<HomePage> {
                             InkWell(
                               onTap: () {
                                 navToSearchResults(
-                                    weatherData: user.homeWeatherData);
+                                    currentWeather: user.homeWeather,
+                                    zip: user.homeZip);
                               },
                               child: currentWeatherCard(
                                   context: context,
-                                  currentWeather:
-                                      user.homeWeatherData.currentWeather),
+                                  currentWeather: user.homeWeather),
                             ),
                           ],
                         ),
                       ),
                 user.workZip == null ||
                         user.workZip.isEmpty ||
-                        user.workWeatherData == null
+                        user.workWeather == null
                     ? Container()
                     : Padding(
                         padding: EdgeInsets.symmetric(
@@ -311,12 +323,13 @@ class _HomePageState extends State<HomePage> {
                             InkWell(
                               onTap: () {
                                 navToSearchResults(
-                                    weatherData: user.workWeatherData);
+                                  currentWeather: user.workWeather,
+                                  zip: user.workZip,
+                                );
                               },
                               child: currentWeatherCard(
                                   context: context,
-                                  currentWeather:
-                                      user.workWeatherData.currentWeather),
+                                  currentWeather: user.workWeather),
                             ),
                           ],
                         ),
@@ -333,15 +346,19 @@ class _HomePageState extends State<HomePage> {
   Widget favoritesTabPage() {
     List<Widget> widgets = [];
 
-    if (user.favorites.isNotEmpty && user.favoritesWeatherData.isNotEmpty) {
-      for (var weatherData in user.favoritesWeatherData) {
+    if (user.favorites.length == user.favoritesCurrentWeather.length &&
+        user.favorites.isNotEmpty) {
+      for (var i = 0; i < user.favorites.length; i++) {
+        String zip = user.favorites[i];
+        CurrentWeather currentWeather = user.favoritesCurrentWeather[i];
+
         widgets.add(
           InkWell(
             onTap: () {
-              navToSearchResults(weatherData: weatherData);
+              navToSearchResults(currentWeather: currentWeather, zip: zip);
             },
             child: currentWeatherCard(
-                context: context, currentWeather: weatherData.currentWeather),
+                context: context, currentWeather: currentWeather),
           ),
         );
       }
@@ -718,14 +735,16 @@ class _HomePageState extends State<HomePage> {
       showLoading = true;
     });
 
-    var weatherData = await getWeatherData(zip: zip).catchError((e) {
+    var currentWeather =
+        await getDataFromWeatherbit(zip: zip, weatherType: WeatherType.current)
+            .catchError((e) {
       setState(() {
         showLoading = false;
         showToast(e.toString());
       });
     });
 
-    if (weatherData != null) {
+    if (currentWeather != null) {
       user.addRecentSearch(zip);
       await sharedPrefs.setStringList(
           kPrefsRecentSearches, user.recentSearches);
@@ -734,7 +753,7 @@ class _HomePageState extends State<HomePage> {
         showLoading = false;
       });
 
-      navToSearchResults(weatherData: weatherData);
+      navToSearchResults(currentWeather: currentWeather);
     } else {
       setState(() {
         showLoading = false;
@@ -742,15 +761,15 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void navToSearchResults({WeatherData weatherData}) {
+  void navToSearchResults({CurrentWeather currentWeather, String zip}) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) {
-          return ScopedModel<WeatherData>(
-            model: weatherData,
+          return ScopedModel<CurrentWeather>(
+            model: currentWeather,
             child: ScopedModel<User>(
               model: user,
-              child: SearchResults(),
+              child: SearchResults(zip: zip),
             ),
           );
         },
@@ -789,11 +808,13 @@ class _HomePageState extends State<HomePage> {
 
     String home = homeController.text;
     String work = workController.text;
-    var homeWeatherData;
-    var workWeatherData;
+    var homeWeather;
+    var workWeather;
 
     if (home != null && home.isNotEmpty) {
-      homeWeatherData = await getWeatherData(zip: home).catchError((e) {
+      homeWeather = await getDataFromWeatherbit(
+              zip: home, weatherType: WeatherType.current)
+          .catchError((e) {
         setState(() {
           showLoading = false;
           showToast(kInvalidZipCode);
@@ -804,7 +825,9 @@ class _HomePageState extends State<HomePage> {
     }
 
     if (work != null && work.isNotEmpty) {
-      workWeatherData = await getWeatherData(zip: work).catchError((e) {
+      workWeather = await getDataFromWeatherbit(
+              zip: work, weatherType: WeatherType.current)
+          .catchError((e) {
         setState(() {
           showLoading = false;
           showToast(kInvalidZipCode);
@@ -814,16 +837,16 @@ class _HomePageState extends State<HomePage> {
       });
     }
 
-    if (home != null && home.isNotEmpty && homeWeatherData != null) {
-      user.updateData(home: home, homeWeatherData: homeWeatherData);
+    if (home != null && home.isNotEmpty && homeWeather != null) {
+      user.updateData(home: home, homeWeather: homeWeather);
       await sharedPrefs.setString(kPrefsHome, home);
     } else if (home != user.homeZip) {
       user.updateData(home: '');
       sharedPrefs.remove(kPrefsHome);
     }
 
-    if (work != null && work.isNotEmpty && workWeatherData != null) {
-      user.updateData(work: work, workWeatherData: workWeatherData);
+    if (work != null && work.isNotEmpty && workWeather != null) {
+      user.updateData(work: work, workWeather: workWeather);
       await sharedPrefs.setString(kPrefsWork, work);
     } else if (work != user.workZip) {
       user.updateData(work: '');

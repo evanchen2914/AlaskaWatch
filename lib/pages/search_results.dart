@@ -1,3 +1,4 @@
+import 'package:alaskawatch/models/forecast.dart';
 import 'package:alaskawatch/models/forecast_daily.dart';
 import 'package:alaskawatch/models/user.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -18,6 +19,10 @@ final forecastBorderColor = Colors.grey[350];
 final forecastBorderWidth = 2.0;
 
 class SearchResults extends StatefulWidget {
+  final String zip;
+
+  SearchResults({Key key, this.zip}) : super(key: key);
+
   @override
   _SearchResultsState createState() => _SearchResultsState();
 }
@@ -25,8 +30,10 @@ class SearchResults extends StatefulWidget {
 class _SearchResultsState extends State<SearchResults> {
   SharedPreferences sharedPrefs;
   ScreenSize screenSize;
-  WeatherData weatherData;
+  CurrentWeather currentWeather;
+  Forecast forecast;
   User user;
+  bool showLoading = true;
 
   @override
   void initState() {
@@ -37,18 +44,46 @@ class _SearchResultsState extends State<SearchResults> {
 
   void setUp() async {
     user = User.getModel(context);
-    weatherData = WeatherData.getModel(context);
+    currentWeather = CurrentWeather.getModel(context);
     sharedPrefs = await SharedPreferences.getInstance();
+
+    var weather = await getDataFromWeatherbit(
+            zip: widget.zip, weatherType: WeatherType.forecast)
+        .catchError((e) {});
+
+    if (weather != null) {
+      forecast = weather;
+    }
+
+    setState(() {
+      showLoading = false;
+    });
   }
 
   Future<void> refresh() async {
-    var updated = await getWeatherData(zip: weatherData.zip).catchError((e) {
+    var curr = await getDataFromWeatherbit(
+            zip: widget.zip, weatherType: WeatherType.current)
+        .catchError((e) {
       showToast(e.toString());
     });
 
-    if (updated != null) {
+    if (curr != null) {
       setState(() {
-        weatherData = updated;
+        currentWeather = curr;
+      });
+    } else {
+      showToast(kWeatherDataError);
+    }
+
+    var fore = await getDataFromWeatherbit(
+            zip: widget.zip, weatherType: WeatherType.forecast)
+        .catchError((e) {
+      showToast(e.toString());
+    });
+
+    if (fore != null) {
+      setState(() {
+        forecast = fore;
       });
     } else {
       showToast(kWeatherDataError);
@@ -57,6 +92,10 @@ class _SearchResultsState extends State<SearchResults> {
 
   @override
   Widget build(BuildContext context) {
+    if (showLoading) {
+      return loadingScreen();
+    }
+
     screenSize = ScreenSize(context);
 
     List<Widget> widgets = [
@@ -66,7 +105,7 @@ class _SearchResultsState extends State<SearchResults> {
       ),
     ];
 
-    for (var day in weatherData.forecast.forecastDailyList) {
+    for (var day in forecast.forecastDailyList) {
       widgets.add(ExpandableWeatherCard(forecastDaily: day));
     }
 
@@ -76,7 +115,7 @@ class _SearchResultsState extends State<SearchResults> {
           color: kAppSecondaryColor,
         ),
         title: Text(
-          weatherData.zip,
+          widget.zip,
           style: TextStyle(
             color: kAppSecondaryColor,
           ),
@@ -86,11 +125,11 @@ class _SearchResultsState extends State<SearchResults> {
           PopupMenuButton<String>(
             onSelected: (value) async {
               if (value == 'fav') {
-                if (user.favorites.contains(weatherData.zip)) {
+                if (user.favorites.contains(widget.zip)) {
                   showToast('Location is already in favorites');
                 } else {
-                  user.addFavorite(weatherData.zip);
-                  user.addFavoriteWeatherData(weatherData);
+                  user.addFavorite(widget.zip);
+                  user.addFavoriteCurrentWeather(currentWeather);
                   await sharedPrefs.setStringList(
                       kPrefsFavorites, user.favorites);
                   showToast('Added to favorites');
@@ -98,7 +137,7 @@ class _SearchResultsState extends State<SearchResults> {
               } else if (value == 'share') {
                 Share.share(
                     'Here\'s the forecast! '
-                    'https://weather.com/weather/tenday/l/${weatherData.zip}:4:US',
+                    'https://weather.com/weather/tenday/l/${widget.zip}:4:US',
                     subject: 'forecast');
               }
             },
@@ -129,7 +168,7 @@ class _SearchResultsState extends State<SearchResults> {
             children: <Widget>[
               headerText('Current'),
               currentWeatherCard(
-                currentWeather: weatherData.currentWeather,
+                currentWeather: currentWeather,
                 context: context,
               ),
               headerText('Forecast'),

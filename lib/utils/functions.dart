@@ -92,29 +92,29 @@ Future<dynamic> getDataFromWeatherbit(
   }
 }
 
-Future<dynamic> getWeatherData({String zip}) async {
-  try {
-    var current =
-        await getDataFromWeatherbit(zip: zip, weatherType: WeatherType.current)
-            .catchError((e) {
-      throw kWeatherDataError;
-    });
-
-    var forecast =
-        await getDataFromWeatherbit(zip: zip, weatherType: WeatherType.forecast)
-            .catchError((e) {
-      throw kWeatherDataError;
-    });
-
-    if (current != null && forecast != null) {
-      return WeatherData(zip: zip, currentWeather: current, forecast: forecast);
-    } else {
-      throw kWeatherDataError;
-    }
-  } catch (e) {
-    throw kWeatherDataError;
-  }
-}
+//Future<dynamic> getWeatherData({String zip}) async {
+//  try {
+//    var current =
+//        await getDataFromWeatherbit(zip: zip, weatherType: WeatherType.current)
+//            .catchError((e) {
+//      throw kWeatherDataError;
+//    });
+//
+//    var forecast =
+//        await getDataFromWeatherbit(zip: zip, weatherType: WeatherType.forecast)
+//            .catchError((e) {
+//      throw kWeatherDataError;
+//    });
+//
+//    if (current != null && forecast != null) {
+//      return WeatherData(zip: zip, currentWeather: current, forecast: forecast);
+//    } else {
+//      throw kWeatherDataError;
+//    }
+//  } catch (e) {
+//    throw kWeatherDataError;
+//  }
+//}
 
 String getWeatherIconUrl(String iconCode) {
   return 'https://www.weatherbit.io/static/img/icons/$iconCode.png';

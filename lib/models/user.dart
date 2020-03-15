@@ -1,3 +1,4 @@
+import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/weather_data.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -7,13 +8,13 @@ class User extends Model {
 
   List<String> recentSearches = [];
   List<String> favorites = [];
-  List<WeatherData> favoritesWeatherData = [];
+  List<CurrentWeather> favoritesCurrentWeather = [];
   String currentZip = '';
   String homeZip = '';
   String workZip = '';
-  WeatherData currentWeatherData;
-  WeatherData homeWeatherData;
-  WeatherData workWeatherData;
+  CurrentWeather currentWeather;
+  CurrentWeather homeWeather;
+  CurrentWeather workWeather;
 
   User();
 
@@ -23,17 +24,17 @@ class User extends Model {
       String current,
       String home,
       String work,
-      WeatherData currentWeatherData,
-      WeatherData homeWeatherData,
-      WeatherData workWeatherData}) {
+      CurrentWeather currentWeather,
+      CurrentWeather homeWeather,
+      CurrentWeather workWeather}) {
     this.recentSearches = []..addAll(recentSearches ?? this.recentSearches);
     this.favorites = []..addAll(favorites ?? this.favorites);
     this.currentZip = current ?? this.currentZip;
     this.homeZip = home ?? this.homeZip;
     this.workZip = work ?? this.workZip;
-    this.currentWeatherData = currentWeatherData ?? this.currentWeatherData;
-    this.homeWeatherData = homeWeatherData ?? this.homeWeatherData;
-    this.workWeatherData = workWeatherData ?? this.workWeatherData;
+    this.currentWeather = currentWeather ?? this.currentWeather;
+    this.homeWeather = homeWeather ?? this.homeWeather;
+    this.workWeather = workWeather ?? this.workWeather;
 
     notifyListeners();
   }
@@ -62,8 +63,8 @@ class User extends Model {
     }
   }
 
-  void addFavoriteWeatherData(WeatherData weatherData) {
-    favoritesWeatherData.add(weatherData);
+  void addFavoriteCurrentWeather(CurrentWeather currentWeather) {
+    favoritesCurrentWeather.add(currentWeather);
 
     notifyListeners();
   }
