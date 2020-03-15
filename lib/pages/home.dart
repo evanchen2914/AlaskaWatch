@@ -240,7 +240,9 @@ class _HomePageState extends State<HomePage> {
             child: ListView(
               children: <Widget>[
                 searchBar(),
-                user.currentWeatherData == null
+                user.currentZip == null ||
+                        user.currentZip.isEmpty ||
+                        user.currentWeatherData == null
                     ? Container()
                     : Padding(
                         padding: EdgeInsets.symmetric(
@@ -261,7 +263,9 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                user.homeWeatherData == null
+                user.homeZip == null ||
+                        user.homeZip.isEmpty ||
+                        user.homeWeatherData == null
                     ? Container()
                     : Padding(
                         padding: EdgeInsets.symmetric(
@@ -282,7 +286,9 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                user.workWeatherData == null
+                user.workZip == null ||
+                        user.workZip.isEmpty ||
+                        user.workWeatherData == null
                     ? Container()
                     : Padding(
                         padding: EdgeInsets.symmetric(
@@ -353,14 +359,16 @@ class _HomePageState extends State<HomePage> {
 
       return Row(
         children: <Widget>[
-          Text(
-            type,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.w600,
+          Container(
+            width: 65,
+            child: Text(
+              type,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-          SizedBox(width: 12),
           Expanded(
             child: TextField(
               controller: controller,
@@ -396,14 +404,16 @@ class _HomePageState extends State<HomePage> {
         alignment: Alignment.centerLeft,
         child: Row(
           children: <Widget>[
-            Text(
-              type,
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w600,
+            Container(
+              width: 65,
+              child: Text(
+                type,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            SizedBox(width: 12),
             Expanded(
               child: Text(
                 zip,
@@ -468,7 +478,8 @@ class _HomePageState extends State<HomePage> {
                         type: 'Home',
                       )
                     : locationPrefInfo(
-                        zip: '${(user.homeZip) ?? 'Not set'}',
+                        zip:
+                            '${user.homeZip != null && user.homeZip.isNotEmpty ? user.homeZip : 'Not set'}',
                         type: 'Home',
                       ),
               ),
@@ -480,7 +491,8 @@ class _HomePageState extends State<HomePage> {
                         type: 'Work',
                       )
                     : locationPrefInfo(
-                        zip: '${(user.workZip) ?? 'Not set'}',
+                        zip:
+                            '${user.workZip != null && user.workZip.isNotEmpty ? user.workZip : 'Not set'}',
                         type: 'Work',
                       ),
               ),
@@ -727,18 +739,18 @@ class _HomePageState extends State<HomePage> {
     }
 
     if (home != null && home.isNotEmpty && homeWeatherData != null) {
-      user.updateData(home: home);
+      user.updateData(home: home, homeWeatherData: homeWeatherData);
       prefs.setString(kPrefsHome, home);
-    } else {
-      user.updateData(home: null);
+    } else if (home != user.homeZip) {
+      user.updateData(home: '');
       prefs.remove(kPrefsHome);
     }
 
     if (work != null && work.isNotEmpty && workWeatherData != null) {
-      user.updateData(work: work);
+      user.updateData(work: work, workWeatherData: workWeatherData);
       prefs.setString(kPrefsWork, work);
-    } else {
-      user.updateData(work: null);
+    } else if (work != user.workZip) {
+      user.updateData(work: '');
       prefs.remove(kPrefsWork);
     }
 
