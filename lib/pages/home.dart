@@ -96,16 +96,31 @@ class _HomePageState extends State<HomePage> {
     if (prefs.containsKey(kPrefsCurrent)) {
       var current = prefs.getString(kPrefsCurrent);
       user.updateData(current: current);
+      var weatherData = await getWeatherData(zip: current).catchError((e) {});
+
+      if (weatherData != null) {
+        user.updateData(currentWeatherData: weatherData);
+      }
     }
 
     if (prefs.containsKey(kPrefsHome)) {
       var home = prefs.getString(kPrefsHome);
       user.updateData(home: home);
+      var weatherData = await getWeatherData(zip: home).catchError((e) {});
+
+      if (weatherData != null) {
+        user.updateData(homeWeatherData: weatherData);
+      }
     }
 
     if (prefs.containsKey(kPrefsWork)) {
       var work = prefs.getString(kPrefsWork);
       user.updateData(work: work);
+      var weatherData = await getWeatherData(zip: work).catchError((e) {});
+
+      if (weatherData != null) {
+        user.updateData(workWeatherData: weatherData);
+      }
     }
 
     /// set to true to skip location
@@ -200,16 +215,70 @@ class _HomePageState extends State<HomePage> {
             child: ListView(
               children: <Widget>[
                 searchBar(),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: screenSize.horizontalPadding),
-                  child: headerText('Current Location'),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: screenSize.horizontalPadding),
-                  child: headerText('Saved Locations'),
-                ),
+                user.currentWeatherData == null
+                    ? Container()
+                    : Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenSize.horizontalPadding),
+                        child: Column(
+                          children: <Widget>[
+                            headerText('Current Location'),
+                            InkWell(
+                              onTap: () {
+                                navToSearchResults(
+                                    weatherData: user.currentWeatherData);
+                              },
+                              child: currentWeatherCard(
+                                  context: context,
+                                  currentWeather:
+                                      user.currentWeatherData.currentWeather),
+                            ),
+                          ],
+                        ),
+                      ),
+                user.homeWeatherData == null
+                    ? Container()
+                    : Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenSize.horizontalPadding),
+                        child: Column(
+                          children: <Widget>[
+                            headerText('Home'),
+                            InkWell(
+                              onTap: () {
+                                navToSearchResults(
+                                    weatherData: user.homeWeatherData);
+                              },
+                              child: currentWeatherCard(
+                                  context: context,
+                                  currentWeather:
+                                      user.homeWeatherData.currentWeather),
+                            ),
+                          ],
+                        ),
+                      ),
+                user.workWeatherData == null
+                    ? Container()
+                    : Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenSize.horizontalPadding),
+                        child: Column(
+                          children: <Widget>[
+                            headerText('Work'),
+                            InkWell(
+                              onTap: () {
+                                navToSearchResults(
+                                    weatherData: user.workWeatherData);
+                              },
+                              child: currentWeatherCard(
+                                  context: context,
+                                  currentWeather:
+                                      user.workWeatherData.currentWeather),
+                            ),
+                          ],
+                        ),
+                      ),
+                SizedBox(height: screenSize.verticalPadding),
               ],
             ),
           ),
@@ -374,7 +443,7 @@ class _HomePageState extends State<HomePage> {
                         type: 'Home',
                       )
                     : locationPrefInfo(
-                        zip: '${(user.home) ?? 'Not set'}',
+                        zip: '${(user.homeZip) ?? 'Not set'}',
                         type: 'Home',
                       ),
               ),
@@ -386,7 +455,7 @@ class _HomePageState extends State<HomePage> {
                         type: 'Work',
                       )
                     : locationPrefInfo(
-                        zip: '${(user.work) ?? 'Not set'}',
+                        zip: '${(user.workZip) ?? 'Not set'}',
                         type: 'Work',
                       ),
               ),
@@ -454,7 +523,7 @@ class _HomePageState extends State<HomePage> {
               return showToast('Zip must be 5 digits');
             }
 
-            navToSearchResults(value);
+            handleZipCodeOnPress(value);
           },
           decoration: InputDecoration(
             hintText: 'Search by Zip',
@@ -497,7 +566,7 @@ class _HomePageState extends State<HomePage> {
         widgets.add(
           InkWell(
             onTap: () {
-              navToSearchResults(zip);
+              handleZipCodeOnPress(zip);
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 10),
@@ -550,7 +619,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void navToSearchResults(String zip) async {
+  void handleZipCodeOnPress(String zip) async {
     setState(() {
       showLoading = true;
     });
@@ -570,21 +639,25 @@ class _HomePageState extends State<HomePage> {
         showLoading = false;
       });
 
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) {
-            return ScopedModel<WeatherData>(
-              model: weatherData,
-              child: SearchResults(),
-            );
-          },
-        ),
-      );
+      navToSearchResults(weatherData: weatherData);
     } else {
       setState(() {
         showLoading = false;
       });
     }
+  }
+
+  void navToSearchResults({WeatherData weatherData}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) {
+          return ScopedModel<WeatherData>(
+            model: weatherData,
+            child: SearchResults(),
+          );
+        },
+      ),
+    );
   }
 
   void startEdit() {

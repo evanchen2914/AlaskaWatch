@@ -93,7 +93,7 @@ Widget customBox({BuildContext context, Widget child}) {
 Widget currentWeatherCard(
     {BuildContext context, CurrentWeather currentWeather}) {
   return Container(
-    height: 220,
+    height: 195,
     padding: EdgeInsets.all(10),
     decoration: BoxDecoration(
       color: Colors.white,
@@ -136,6 +136,7 @@ Widget currentWeatherCard(
         Expanded(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               CachedNetworkImage(
                 imageUrl: getWeatherIconUrl(currentWeather?.weatherIconCode),
@@ -155,7 +156,7 @@ Widget currentWeatherCard(
           ),
         ),
         Container(
-          alignment: Alignment.topLeft,
+          alignment: Alignment.bottomLeft,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[

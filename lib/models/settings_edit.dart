@@ -10,7 +10,7 @@ class SettingsEdit extends Model {
   String work;
 
   SettingsEdit({User user}) {
-    home = user.home;
-    work = user.work;
+    home = user.homeZip;
+    work = user.workZip;
   }
 }
