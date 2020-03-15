@@ -56,7 +56,7 @@ Future<dynamic> getDataFromWeatherbit(
       '&country=US'
       '&key=$kWeatherKey';
 
-  debugPrint('Getting data from url: $url');
+  print('Getting data from url: $url');
 
   http.Response response = await http.get(url);
   String value = response.body;
