@@ -537,7 +537,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 setState(() {
                   searchController.clear();
-                  FocusScope.of(context).requestFocus(focusNode);
+                  FocusScope.of(context).requestFocus(FocusNode());
                 });
               },
               child: Icon(Icons.close),
