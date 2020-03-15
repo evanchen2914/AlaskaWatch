@@ -320,6 +320,39 @@ class _HomePageState extends State<HomePage> {
 
   Widget favoritesTabPage() {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Favorites',
+          style: TextStyle(
+            color: kAppSecondaryColor,
+          ),
+        ),
+//        leading: showEdit
+//            ? IconButton(
+//          icon: Icon(
+//            Icons.close,
+//            color: kAppSecondaryColor,
+//          ),
+//          onPressed: cancelEdit,
+//        )
+//            : null,
+//        actions: <Widget>[
+//          IconButton(
+//            onPressed: () {
+//              if (showEdit) {
+//                saveEdit();
+//              } else {
+//                startEdit();
+//              }
+//            },
+//            icon: Icon(
+//              showEdit ? Icons.done : Icons.edit,
+//              color: kAppSecondaryColor,
+//            ),
+//          ),
+//        ],
+        centerTitle: true,
+      ),
       body: ScrollConfiguration(
         behavior: RemoveScrollGlow(),
         child: ListView(
