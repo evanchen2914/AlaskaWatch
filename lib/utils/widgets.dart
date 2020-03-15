@@ -93,7 +93,7 @@ Widget customBox({BuildContext context, Widget child}) {
 Widget currentWeatherCard(
     {BuildContext context, CurrentWeather currentWeather}) {
   return Container(
-    height: 200,
+    height: 220,
     padding: EdgeInsets.all(10),
     decoration: BoxDecoration(
       color: Colors.white,
@@ -119,34 +119,64 @@ Widget currentWeatherCard(
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               SizedBox(height: 5),
               Text(
                 currentWeather?.weatherDescription?.toString(),
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.w400,
                 ),
               ),
             ],
           ),
         ),
-        Row(
-          children: <Widget>[
-            CachedNetworkImage(
-              imageUrl: getWeatherIconUrl(currentWeather?.weatherIconCode),
-              fit: BoxFit.cover,
-            ),
-            Text(
-              celsiusToFahrenheit(currentWeather?.tempCelsius),
-              style: TextStyle(
-                fontSize: 50,
-                fontWeight: FontWeight.w300,
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              CachedNetworkImage(
+                imageUrl: getWeatherIconUrl(currentWeather?.weatherIconCode),
+                fit: BoxFit.cover,
               ),
-            ),
-          ],
+              Container(
+                margin: EdgeInsets.only(right: 15),
+                child: Text(
+                  celsiusToFahrenheit(currentWeather?.tempCelsius),
+                  style: TextStyle(
+                    fontSize: 55,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          alignment: Alignment.topLeft,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                '${parseWindDirection(currentWeather?.windDirAbbr)} ${windSpeedToMph(currentWeather?.windSpeed)}',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              Text(
+                'Feels like ${celsiusToFahrenheit(currentWeather?.feelsLikeTemp)}',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w400,
+                ),
+              )
+            ],
+          ),
         ),
       ],
     ),

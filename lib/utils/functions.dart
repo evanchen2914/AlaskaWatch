@@ -195,3 +195,39 @@ Future<String> getZipFromPosition(Position position) async {
     throw kCurrentLocationError;
   }
 }
+
+String windSpeedToMph(var speed) {
+  if (speed == null) {
+    return null;
+  }
+
+  double windSpeedMs;
+
+  if (speed is String) {
+    windSpeedMs = double.parse(speed);
+  } else if (speed is int) {
+    windSpeedMs = speed.toDouble();
+  } else if (speed is double) {
+    windSpeedMs = speed;
+  }
+
+  double windSpeedMph = windSpeedMs * 2.237;
+
+  return '${windSpeedMph?.round()} mph';
+}
+
+String parseWindDirection(var direction) {
+  if (direction == null) {
+    return null;
+  }
+
+  if (direction is String) {
+    if (direction.length > 2) {
+      return direction.substring(1);
+    } else {
+      return direction;
+    }
+  } else {
+    return null;
+  }
+}
