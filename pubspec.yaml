@@ -18,7 +18,6 @@ environment:
 
 dependencies:
   cached_network_image: ^2.0.0-rc
-  dio: ^3.0.9
   expandable: ^3.0.0+1
   http: ^0.12.0+4
   intl: ^0.16.1
