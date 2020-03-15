@@ -5,7 +5,6 @@ import 'package:alaskawatch/models/user.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/weather_data.dart';
@@ -28,7 +27,7 @@ class _HomePageState extends State<HomePage> {
   ScreenSize screenSize;
   User user;
   SettingsEdit settingsEdit;
-  SharedPreferences prefs;
+  SharedPreferences sharedPrefs;
 
   bool showSplash = true;
   bool showLoading = false;
@@ -76,25 +75,17 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
 
-    KeyboardVisibilityNotification().addNewListener(
-      onChange: (bool visible) {
-        setState(() {
-          keyboardVisible = visible;
-        });
-      },
-    );
-
     user = User();
 
-    prefs = await SharedPreferences.getInstance();
+    sharedPrefs = await SharedPreferences.getInstance();
 
-    if (prefs.containsKey(kPrefsRecentSearches)) {
-      var recentSearches = prefs.getStringList(kPrefsRecentSearches);
+    if (sharedPrefs.containsKey(kPrefsRecentSearches)) {
+      var recentSearches = sharedPrefs.getStringList(kPrefsRecentSearches);
       user.updateData(recentSearches: recentSearches);
     }
 
-    if (prefs.containsKey(kPrefsCurrent)) {
-      var current = prefs.getString(kPrefsCurrent);
+    if (sharedPrefs.containsKey(kPrefsCurrent)) {
+      var current = sharedPrefs.getString(kPrefsCurrent);
       user.updateData(current: current);
       var weatherData = await getWeatherData(zip: current).catchError((e) {});
 
@@ -103,8 +94,8 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    if (prefs.containsKey(kPrefsHome)) {
-      var home = prefs.getString(kPrefsHome);
+    if (sharedPrefs.containsKey(kPrefsHome)) {
+      var home = sharedPrefs.getString(kPrefsHome);
       user.updateData(home: home);
       var weatherData = await getWeatherData(zip: home).catchError((e) {});
 
@@ -113,8 +104,8 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    if (prefs.containsKey(kPrefsWork)) {
-      var work = prefs.getString(kPrefsWork);
+    if (sharedPrefs.containsKey(kPrefsWork)) {
+      var work = sharedPrefs.getString(kPrefsWork);
       user.updateData(work: work);
       var weatherData = await getWeatherData(zip: work).catchError((e) {});
 
@@ -134,7 +125,7 @@ class _HomePageState extends State<HomePage> {
     });
 
     if (zip != null) {
-      prefs.setString(kPrefsCurrent, zip);
+      await sharedPrefs.setString(kPrefsCurrent, zip);
       user.updateData(current: zip);
     }
 
@@ -154,6 +145,12 @@ class _HomePageState extends State<HomePage> {
     }
 
     screenSize = ScreenSize(context);
+
+    if (MediaQuery.of(context).viewInsets.bottom == 0) {
+      keyboardVisible = false;
+    } else {
+      keyboardVisible = true;
+    }
 
     bottomTabPages = <Widget>[
       homeTabPage(),
@@ -643,11 +640,12 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   InkWell(
-                    onTap: () {
+                    onTap: () async {
+                      await sharedPrefs.setStringList(
+                          kPrefsRecentSearches, user.recentSearches);
+
                       setState(() {
                         user.removeRecentSearch(zip);
-                        prefs.setStringList(
-                            kPrefsRecentSearches, user.recentSearches);
                       });
                     },
                     child: Icon(
@@ -688,7 +686,7 @@ class _HomePageState extends State<HomePage> {
 
     if (weatherData != null) {
       user.addRecentSearch(zip);
-      prefs.setStringList(kPrefsRecentSearches, user.recentSearches);
+      await sharedPrefs.setStringList(kPrefsRecentSearches, user.recentSearches);
 
       setState(() {
         showLoading = false;
@@ -773,18 +771,18 @@ class _HomePageState extends State<HomePage> {
 
     if (home != null && home.isNotEmpty && homeWeatherData != null) {
       user.updateData(home: home, homeWeatherData: homeWeatherData);
-      prefs.setString(kPrefsHome, home);
+      await sharedPrefs.setString(kPrefsHome, home);
     } else if (home != user.homeZip) {
       user.updateData(home: '');
-      prefs.remove(kPrefsHome);
+      sharedPrefs.remove(kPrefsHome);
     }
 
     if (work != null && work.isNotEmpty && workWeatherData != null) {
       user.updateData(work: work, workWeatherData: workWeatherData);
-      prefs.setString(kPrefsWork, work);
+     await  sharedPrefs.setString(kPrefsWork, work);
     } else if (work != user.workZip) {
       user.updateData(work: '');
-      prefs.remove(kPrefsWork);
+      sharedPrefs.remove(kPrefsWork);
     }
 
     showToast('Settings saved');
