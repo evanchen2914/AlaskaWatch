@@ -18,6 +18,7 @@ final kInvalidZipCode = 'Invalid zip code';
 
 // Shared Preferences keys
 final kPrefsRecentSearches = 'recent_searches';
+final kPrefsFavorites = 'favorites';
 final kPrefsCurrent = 'current';
 final kPrefsHome = 'home';
 final kPrefsWork = 'work';

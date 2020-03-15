@@ -1,4 +1,5 @@
 import 'package:alaskawatch/models/forecast_daily.dart';
+import 'package:alaskawatch/models/user.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expandable/expandable.dart';
 import 'package:alaskawatch/models/current_weather.dart';
@@ -11,6 +12,7 @@ import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:alaskawatch/utils/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final forecastBorderColor = Colors.grey[350];
 final forecastBorderWidth = 2.0;
@@ -21,14 +23,22 @@ class SearchResults extends StatefulWidget {
 }
 
 class _SearchResultsState extends State<SearchResults> {
+  SharedPreferences sharedPrefs;
   ScreenSize screenSize;
   WeatherData weatherData;
+  User user;
 
   @override
   void initState() {
     super.initState();
 
+    setUp();
+  }
+
+  void setUp() async {
+    user = User.getModel(context);
     weatherData = WeatherData.getModel(context);
+    sharedPrefs = await SharedPreferences.getInstance();
   }
 
   Future<void> refresh() async {
@@ -73,14 +83,36 @@ class _SearchResultsState extends State<SearchResults> {
         ),
         centerTitle: true,
         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.share),
-            tooltip: 'Share forecast',
-            onPressed: () {
-              Share.share(
-                  'Here\'s the forecast! '
-                  'https://weather.com/weather/tenday/l/${weatherData.zip}:4:US',
-                  subject: 'forecast');
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'fav') {
+                if (user.favorites.contains(weatherData.zip)) {
+                  showToast('Location is already in favorites');
+                } else {
+                  user.addFavorite(weatherData.zip);
+                  user.addFavoriteWeatherData(weatherData);
+                  await sharedPrefs.setStringList(
+                      kPrefsFavorites, user.favorites);
+                  showToast('Added to favorites');
+                }
+              } else if (value == 'share') {
+                Share.share(
+                    'Here\'s the forecast! '
+                    'https://weather.com/weather/tenday/l/${weatherData.zip}:4:US',
+                    subject: 'forecast');
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'fav',
+                  child: Text('Add to favorites'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'share',
+                  child: Text('Share'),
+                ),
+              ];
             },
           ),
         ],

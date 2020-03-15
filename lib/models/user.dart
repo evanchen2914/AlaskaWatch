@@ -6,6 +6,8 @@ class User extends Model {
   static User getModel(BuildContext context) => ScopedModel.of<User>(context);
 
   List<String> recentSearches = [];
+  List<String> favorites = [];
+  List<WeatherData> favoritesWeatherData = [];
   String currentZip = '';
   String homeZip = '';
   String workZip = '';
@@ -17,6 +19,7 @@ class User extends Model {
 
   void updateData(
       {List<String> recentSearches,
+      List<String> favorites,
       String current,
       String home,
       String work,
@@ -24,6 +27,7 @@ class User extends Model {
       WeatherData homeWeatherData,
       WeatherData workWeatherData}) {
     this.recentSearches = []..addAll(recentSearches ?? this.recentSearches);
+    this.favorites = []..addAll(favorites ?? this.favorites);
     this.currentZip = current ?? this.currentZip;
     this.homeZip = home ?? this.homeZip;
     this.workZip = work ?? this.workZip;
@@ -45,6 +49,28 @@ class User extends Model {
   void removeRecentSearch(String zip) {
     if (recentSearches.contains(zip)) {
       recentSearches.remove(zip);
+
+      notifyListeners();
+    }
+  }
+
+  void addFavorite(String zip) {
+    if (!favorites.contains(zip)) {
+      favorites.add(zip);
+
+      notifyListeners();
+    }
+  }
+
+  void addFavoriteWeatherData(WeatherData weatherData) {
+    favoritesWeatherData.add(weatherData);
+
+    notifyListeners();
+  }
+
+  void removeFavorite(String zip) {
+    if (favorites.contains(zip)) {
+      favorites.remove(zip);
 
       notifyListeners();
     }

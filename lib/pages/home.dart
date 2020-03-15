@@ -84,6 +84,21 @@ class _HomePageState extends State<HomePage> {
       user.updateData(recentSearches: recentSearches);
     }
 
+    if (sharedPrefs.containsKey(kPrefsFavorites)) {
+      var favorites = sharedPrefs.getStringList(kPrefsFavorites);
+      user.updateData(favorites: favorites);
+
+      if (user.favorites != null && user.favorites.isNotEmpty) {
+        for (var zip in user.favorites) {
+          var weatherData = await getWeatherData(zip: zip).catchError((e) {});
+
+          if (weatherData != null) {
+            user.addFavoriteWeatherData(weatherData);
+          }
+        }
+      }
+    }
+
     if (sharedPrefs.containsKey(kPrefsCurrent)) {
       var current = sharedPrefs.getString(kPrefsCurrent);
       user.updateData(current: current);
@@ -316,6 +331,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget favoritesTabPage() {
+    List<Widget> widgets = [];
+
+    if (user.favorites.isNotEmpty && user.favoritesWeatherData.isNotEmpty) {
+      for (var weatherData in user.favoritesWeatherData) {
+        widgets.add(
+          InkWell(
+            onTap: () {
+              navToSearchResults(weatherData: weatherData);
+            },
+            child: currentWeatherCard(
+                context: context, currentWeather: weatherData.currentWeather),
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -353,7 +384,17 @@ class _HomePageState extends State<HomePage> {
       body: ScrollConfiguration(
         behavior: RemoveScrollGlow(),
         child: ListView(
-          children: <Widget>[],
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenSize.horizontalPadding,
+                vertical: screenSize.verticalPadding,
+              ),
+              child: Column(
+                children: widgets,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -686,7 +727,8 @@ class _HomePageState extends State<HomePage> {
 
     if (weatherData != null) {
       user.addRecentSearch(zip);
-      await sharedPrefs.setStringList(kPrefsRecentSearches, user.recentSearches);
+      await sharedPrefs.setStringList(
+          kPrefsRecentSearches, user.recentSearches);
 
       setState(() {
         showLoading = false;
@@ -706,7 +748,10 @@ class _HomePageState extends State<HomePage> {
         builder: (context) {
           return ScopedModel<WeatherData>(
             model: weatherData,
-            child: SearchResults(),
+            child: ScopedModel<User>(
+              model: user,
+              child: SearchResults(),
+            ),
           );
         },
       ),
@@ -779,7 +824,7 @@ class _HomePageState extends State<HomePage> {
 
     if (work != null && work.isNotEmpty && workWeatherData != null) {
       user.updateData(work: work, workWeatherData: workWeatherData);
-     await  sharedPrefs.setString(kPrefsWork, work);
+      await sharedPrefs.setString(kPrefsWork, work);
     } else if (work != user.workZip) {
       user.updateData(work: '');
       sharedPrefs.remove(kPrefsWork);
