@@ -183,3 +183,19 @@ Widget currentWeatherCard(
     ),
   );
 }
+
+Widget headerText(String text) {
+  return Container(
+    height: 59,
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+  );
+}

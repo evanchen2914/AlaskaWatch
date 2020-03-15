@@ -6,6 +6,7 @@ class ForecastDaily extends Model {
       ScopedModel.of<ForecastDaily>(context);
 
   var validDate;
+  DateTime dateTime;
   var temp;
   var highTemp;
   var lowTemp;
@@ -38,6 +39,15 @@ class ForecastDaily extends Model {
     uvIndex = data['uv'];
     sunrise = data['sunrise_ts'];
     sunset = data['sunset_ts'];
+
+    // parse valid date
+    String origDate = validDate.toString();
+    List split = origDate.split('-');
+    int year = int.parse(split[0]);
+    int month = int.parse(split[1]);
+    int day = int.parse(split[2]);
+
+    dateTime = DateTime(year, month, day);
 
     notifyListeners();
   }

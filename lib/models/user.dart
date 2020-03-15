@@ -6,9 +6,9 @@ class User extends Model {
   static User getModel(BuildContext context) => ScopedModel.of<User>(context);
 
   List<String> recentSearches = [];
-  String currentZip;
-  String homeZip;
-  String workZip;
+  String currentZip = '';
+  String homeZip = '';
+  String workZip = '';
   WeatherData currentWeatherData;
   WeatherData homeWeatherData;
   WeatherData workWeatherData;

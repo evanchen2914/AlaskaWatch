@@ -1,4 +1,5 @@
 import 'package:alaskawatch/models/forecast_daily.dart';
+import 'package:alaskawatch/utils/functions.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 
@@ -26,7 +27,7 @@ class Forecast extends Model {
     if (days != null && days.isNotEmpty) {
       forecastDailyList = [];
 
-      if (forecastDailyList.length >= 7) {
+      if (days.length > 0) {
         for (var i = 0; i < 7; i++) {
           forecastDailyList.add(ForecastDaily(days[i]));
         }
