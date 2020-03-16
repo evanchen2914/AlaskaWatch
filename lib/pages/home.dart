@@ -1,20 +1,17 @@
 import 'dart:ui';
 
-import 'package:alaskawatch/models/settings_edit.dart';
-import 'package:alaskawatch/models/user.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:geocoder/geocoder.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/screen_size.dart';
-import 'package:alaskawatch/models/weather_data.dart';
+import 'package:alaskawatch/models/settings_edit.dart';
+import 'package:alaskawatch/models/user.dart';
 import 'package:alaskawatch/pages/weather_details.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:alaskawatch/utils/widgets.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
