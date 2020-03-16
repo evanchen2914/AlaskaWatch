@@ -302,10 +302,8 @@ class _HomePageState extends State<HomePage> {
                             headerText('Current Location'),
                             InkWell(
                               onTap: () {
-                                navToSearchResults(
-                                  currentWeather: user.currentWeather,
-                                  zip: user.currentZip,
-                                );
+                                navToWeatherDetails(
+                                    currentWeather: user.currentWeather);
                               },
                               child: currentWeatherCard(
                                   context: context,
@@ -326,9 +324,8 @@ class _HomePageState extends State<HomePage> {
                             headerText('Home'),
                             InkWell(
                               onTap: () {
-                                navToSearchResults(
-                                    currentWeather: user.homeWeather,
-                                    zip: user.homeZip);
+                                navToWeatherDetails(
+                                    currentWeather: user.homeWeather);
                               },
                               child: currentWeatherCard(
                                   context: context,
@@ -349,10 +346,8 @@ class _HomePageState extends State<HomePage> {
                             headerText('Work'),
                             InkWell(
                               onTap: () {
-                                navToSearchResults(
-                                  currentWeather: user.workWeather,
-                                  zip: user.workZip,
-                                );
+                                navToWeatherDetails(
+                                    currentWeather: user.workWeather);
                               },
                               child: currentWeatherCard(
                                   context: context,
@@ -380,7 +375,7 @@ class _HomePageState extends State<HomePage> {
         widgets.add(
           InkWell(
             onTap: () {
-              navToSearchResults(currentWeather: currentWeather, zip: zip);
+              navToWeatherDetails(currentWeather: currentWeather);
             },
             child: currentWeatherCard(
                 context: context, currentWeather: currentWeather),
@@ -756,17 +751,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void handleZipCodeOnPress(String zip) async {
-    setState(() {
-      showLoading = true;
-    });
-
     var currentWeather =
         await getDataFromWeatherbit(zip: zip, weatherType: WeatherType.current)
             .catchError((e) {
-      setState(() {
-        showLoading = false;
-        showToast(e.toString());
-      });
+      showToast(e.toString());
     });
 
     if (currentWeather != null) {
@@ -774,19 +762,11 @@ class _HomePageState extends State<HomePage> {
       await sharedPrefs.setStringList(
           kPrefsRecentSearches, user.recentSearches);
 
-      setState(() {
-        showLoading = false;
-      });
-
-      navToSearchResults(currentWeather: currentWeather);
-    } else {
-      setState(() {
-        showLoading = false;
-      });
+      navToWeatherDetails(currentWeather: currentWeather);
     }
   }
 
-  void navToSearchResults({CurrentWeather currentWeather, String zip}) {
+  void navToWeatherDetails({CurrentWeather currentWeather}) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) {
@@ -794,7 +774,7 @@ class _HomePageState extends State<HomePage> {
             model: currentWeather,
             child: ScopedModel<User>(
               model: user,
-              child: WeatherDetails(zip: zip),
+              child: WeatherDetails(zip: currentWeather.zip),
             ),
           );
         },

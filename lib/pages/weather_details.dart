@@ -103,7 +103,7 @@ class _WeatherDetailsState extends State<WeatherDetails> {
       ),
     ];
 
-    for (var day in forecast.forecastDailyList) {
+    for (var day in forecast?.forecastDailyList) {
       widgets.add(ExpandableWeatherCard(forecastDaily: day));
     }
 
