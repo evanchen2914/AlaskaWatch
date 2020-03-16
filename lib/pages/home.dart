@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
 
   bool showSplash = true;
   bool showLoading = false;
-  bool showEdit = false;
+  bool showLocationPrefEdit = false;
 
   int currentTabIndex = 0;
   List bottomNavBarTiles = [];
@@ -452,7 +452,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
           border: Border.all(
-            color: showEdit ? Colors.grey[300] : kAppPrimaryColor,
+            color: showLocationPrefEdit ? Colors.grey[300] : kAppPrimaryColor,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(kAppBorderRadius),
@@ -510,7 +510,7 @@ class _HomePageState extends State<HomePage> {
 
       return InkWell(
         onTap: () {
-          startEdit();
+          startLocationPrefEdit();
         },
         child: Container(
           alignment: Alignment.centerLeft,
@@ -549,26 +549,26 @@ class _HomePageState extends State<HomePage> {
             color: kAppSecondaryColor,
           ),
         ),
-        leading: showEdit
+        leading: showLocationPrefEdit
             ? IconButton(
                 icon: Icon(
                   Icons.close,
                   color: kAppSecondaryColor,
                 ),
-                onPressed: cancelEdit,
+                onPressed: cancelLocationPrefEdit,
               )
             : null,
         actions: <Widget>[
           IconButton(
             onPressed: () {
-              if (showEdit) {
-                saveEdit();
+              if (showLocationPrefEdit) {
+                saveLocationPrefEdit();
               } else {
-                startEdit();
+                startLocationPrefEdit();
               }
             },
             icon: Icon(
-              showEdit ? Icons.done : Icons.edit,
+              showLocationPrefEdit ? Icons.done : Icons.edit,
               color: kAppSecondaryColor,
             ),
           ),
@@ -585,7 +585,7 @@ class _HomePageState extends State<HomePage> {
             children: <Widget>[
               headerText('Location Preferences'),
               locationPrefBox(
-                child: showEdit
+                child: showLocationPrefEdit
                     ? locationPrefTextField(
                         controller: homeController,
                         type: 'Home',
@@ -598,7 +598,7 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: screenSize.verticalPadding),
               locationPrefBox(
-                child: showEdit
+                child: showLocationPrefEdit
                     ? locationPrefTextField(
                         controller: workController,
                         type: 'Work',
@@ -787,12 +787,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void startEdit() {
-    if (showEdit) {
+  void startLocationPrefEdit() {
+    if (showLocationPrefEdit) {
       return;
     }
 
-    showEdit = true;
+    showLocationPrefEdit = true;
 
     settingsEdit = SettingsEdit(user: user);
 
@@ -807,8 +807,8 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  void saveEdit() async {
-    if (!showEdit) {
+  void saveLocationPrefEdit() async {
+    if (!showLocationPrefEdit) {
       return;
     }
 
@@ -874,18 +874,18 @@ class _HomePageState extends State<HomePage> {
     showToast('Settings saved');
     FocusScope.of(context).requestFocus(FocusNode());
     showLoading = false;
-    showEdit = false;
+    showLocationPrefEdit = false;
 
     setState(() {});
   }
 
-  void cancelEdit() {
-    if (!showEdit) {
+  void cancelLocationPrefEdit() {
+    if (!showLocationPrefEdit) {
       return;
     }
 
     FocusScope.of(context).requestFocus(FocusNode());
-    showEdit = false;
+    showLocationPrefEdit = false;
     homeController.clear();
     workController.clear();
     setState(() {});
