@@ -229,7 +229,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> refresh() async {
+  Future<void> refreshHome() async {
     setState(() {
       showLoading = true;
     });
@@ -284,7 +284,7 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.only(top: kAppVerticalPadding),
         child: RefreshIndicator(
           color: kAppPrimaryColor,
-          onRefresh: refresh,
+          onRefresh: refreshHome,
           child: ScrollConfiguration(
             behavior: RemoveScrollGlow(),
             child: ListView(
