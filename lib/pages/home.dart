@@ -231,10 +231,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> refreshHome() async {
-    setState(() {
-      showLoading = true;
-    });
-
     if (user.currentZip != null && user.currentZip.isNotEmpty) {
       var currentWeather = await getDataFromWeatherbit(
               zip: user.currentZip, weatherType: WeatherType.current)
@@ -265,9 +261,32 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    setState(() {
-      showLoading = false;
-    });
+    setState(() {});
+  }
+
+  Future<void> refreshFavorites() async {
+    if (user.favorites != null && user.favorites.isNotEmpty) {
+      for (String zip in user.favorites) {
+        var currentWeather = user.getCachedCurrentWeather(zip);
+
+        if (currentWeather == null) {
+          currentWeather = await getDataFromWeatherbit(
+                  zip: zip, weatherType: WeatherType.current)
+              .catchError((e) {});
+        }
+
+        if (currentWeather != null) {
+          user.addFavoriteCurrentWeather(currentWeather);
+        } else {
+          user.removeFavoriteCurrentWeather(zip);
+          user.removeFavorite(zip);
+        }
+      }
+
+      await sharedPrefs.setStringList(kPrefsFavorites, user.favorites);
+    }
+
+    setState(() {});
   }
 
   Widget homeTabPage() {
@@ -419,20 +438,23 @@ class _HomePageState extends State<HomePage> {
         ],
         centerTitle: true,
       ),
-      body: ScrollConfiguration(
-        behavior: RemoveScrollGlow(),
-        child: ListView(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenSize.horizontalPadding,
-                vertical: screenSize.verticalPadding,
+      body: RefreshIndicator(
+        onRefresh: refreshFavorites,
+        child: ScrollConfiguration(
+          behavior: RemoveScrollGlow(),
+          child: ListView(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenSize.horizontalPadding,
+                  vertical: screenSize.verticalPadding,
+                ),
+                child: Column(
+                  children: widgets,
+                ),
               ),
-              child: Column(
-                children: widgets,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -813,10 +835,6 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    setState(() {
-      showLoading = true;
-    });
-
     String home = homeController.text;
     String work = workController.text;
     var homeWeather;
@@ -829,11 +847,7 @@ class _HomePageState extends State<HomePage> {
         homeWeather = await getDataFromWeatherbit(
                 zip: home, weatherType: WeatherType.current)
             .catchError((e) {
-          setState(() {
-            showLoading = false;
-            showToast(kInvalidZipCode);
-          });
-
+          showToast(kInvalidZipCode);
           return;
         });
       }
@@ -846,11 +860,7 @@ class _HomePageState extends State<HomePage> {
         workWeather = await getDataFromWeatherbit(
                 zip: work, weatherType: WeatherType.current)
             .catchError((e) {
-          setState(() {
-            showLoading = false;
-            showToast(kInvalidZipCode);
-          });
-
+          showToast(kInvalidZipCode);
           return;
         });
       }
@@ -874,7 +884,6 @@ class _HomePageState extends State<HomePage> {
 
     showToast('Settings saved');
     FocusScope.of(context).requestFocus(FocusNode());
-    showLoading = false;
     showLocationPrefEdit = false;
 
     setState(() {});
@@ -909,12 +918,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    setState(() {
-      showLoading = true;
-    });
-
     showToast('Settings saved');
-    showLoading = false;
     showFavoritesEdit = false;
 
     setState(() {});
