@@ -18,16 +18,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 final forecastBorderColor = Colors.grey[350];
 final forecastBorderWidth = 2.0;
 
-class SearchResults extends StatefulWidget {
+class WeatherDetails extends StatefulWidget {
   final String zip;
 
-  SearchResults({Key key, this.zip}) : super(key: key);
+  WeatherDetails({Key key, this.zip}) : super(key: key);
 
   @override
-  _SearchResultsState createState() => _SearchResultsState();
+  _WeatherDetailsState createState() => _WeatherDetailsState();
 }
 
-class _SearchResultsState extends State<SearchResults> {
+class _WeatherDetailsState extends State<WeatherDetails> {
   SharedPreferences sharedPrefs;
   ScreenSize screenSize;
   CurrentWeather currentWeather;

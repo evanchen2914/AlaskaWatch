@@ -1,3 +1,4 @@
+import 'package:alaskawatch/utils/functions.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 
@@ -5,6 +6,7 @@ class CurrentWeather extends Model {
   static CurrentWeather getModel(BuildContext context) =>
       ScopedModel.of<CurrentWeather>(context);
 
+  String zip;
   var cityName;
   var stateCode;
   var tempCelsius;
@@ -16,7 +18,8 @@ class CurrentWeather extends Model {
   var windSpeed;
   var humidity;
 
-  CurrentWeather(Map data) {
+  CurrentWeather(Map data, String zip) {
+    this.zip = zip;
     updateData(data);
   }
 

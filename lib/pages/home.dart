@@ -8,7 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/weather_data.dart';
-import 'package:alaskawatch/pages/search_results.dart';
+import 'package:alaskawatch/pages/weather_details.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:alaskawatch/utils/widgets.dart';
@@ -79,6 +79,23 @@ class _HomePageState extends State<HomePage> {
 
     sharedPrefs = await SharedPreferences.getInstance();
 
+    /// set to true to skip location
+//    bool testMode = true;
+    bool testMode = false;
+
+    Position position = await getUserLocation(testMode: testMode);
+
+    if (position != null) {
+      String zip = await getZipFromPosition(position).catchError((e) {
+        showToast(kCurrentLocationError);
+      });
+
+      if (zip != null) {
+        await sharedPrefs.setString(kPrefsCurrent, zip);
+        user.updateData(currentZip: zip);
+      }
+    }
+
     if (sharedPrefs.containsKey(kPrefsRecentSearches)) {
       var recentSearches = sharedPrefs.getStringList(kPrefsRecentSearches);
       user.updateData(recentSearches: recentSearches);
@@ -90,66 +107,79 @@ class _HomePageState extends State<HomePage> {
 
       if (user.favorites != null && user.favorites.isNotEmpty) {
         for (var zip in user.favorites) {
-          var currentWeather = await getDataFromWeatherbit(
-                  zip: zip, weatherType: WeatherType.current)
-              .catchError((e) {});
+          var currentWeather = user.getCachedCurrentWeather(zip);
+
+          if (currentWeather == null) {
+            currentWeather = await getDataFromWeatherbit(
+                    zip: zip, weatherType: WeatherType.current)
+                .catchError((e) {});
+          }
 
           if (currentWeather != null) {
             user.addFavoriteCurrentWeather(currentWeather);
+          } else {
+            user.removeFavoriteCurrentWeather(zip);
+            user.removeFavorite(zip);
+            await sharedPrefs.setStringList(kPrefsFavorites, user.favorites);
           }
         }
       }
     }
 
     if (sharedPrefs.containsKey(kPrefsCurrent)) {
-      var current = sharedPrefs.getString(kPrefsCurrent);
-      user.updateData(current: current);
-      var currentWeather = await getDataFromWeatherbit(
-              zip: current, weatherType: WeatherType.current)
-          .catchError((e) {});
+      user.updateData(currentZip: sharedPrefs.getString(kPrefsCurrent));
+      var currentWeather = user.getCachedCurrentWeather(user.currentZip);
+
+      if (currentWeather == null) {
+        currentWeather = await getDataFromWeatherbit(
+                zip: user.currentZip, weatherType: WeatherType.current)
+            .catchError((e) {});
+      }
 
       if (currentWeather != null) {
         user.updateData(currentWeather: currentWeather);
+      } else {
+        user.updateData(currentZip: '', currentWeather: null);
+        await sharedPrefs.remove(kPrefsCurrent);
       }
     }
 
     if (sharedPrefs.containsKey(kPrefsHome)) {
       var home = sharedPrefs.getString(kPrefsHome);
-      user.updateData(home: home);
-      var homeWeather = await getDataFromWeatherbit(
-              zip: home, weatherType: WeatherType.current)
-          .catchError((e) {});
+      user.updateData(homeZip: home);
+      var homeWeather = user.getCachedCurrentWeather(home);
+
+      if (homeWeather == null) {
+        homeWeather = await getDataFromWeatherbit(
+                zip: home, weatherType: WeatherType.current)
+            .catchError((e) {});
+      }
 
       if (homeWeather != null) {
         user.updateData(homeWeather: homeWeather);
+      } else {
+        user.updateData(homeZip: '', homeWeather: null);
+        await sharedPrefs.remove(kPrefsHome);
       }
     }
 
     if (sharedPrefs.containsKey(kPrefsWork)) {
       var work = sharedPrefs.getString(kPrefsWork);
-      user.updateData(work: work);
-      var workWeather = await getDataFromWeatherbit(
-              zip: work, weatherType: WeatherType.current)
-          .catchError((e) {});
+      user.updateData(workZip: work);
+      var workWeather = user.getCachedCurrentWeather(work);
+
+      if (workWeather == null) {
+        workWeather = await getDataFromWeatherbit(
+                zip: work, weatherType: WeatherType.current)
+            .catchError((e) {});
+      }
 
       if (workWeather != null) {
         user.updateData(workWeather: workWeather);
+      } else {
+        user.updateData(workZip: '', workWeather: null);
+        await sharedPrefs.remove(kPrefsWork);
       }
-    }
-
-    /// set to true to skip location
-//    bool testMode = true;
-    bool testMode = false;
-
-    Position position = await getUserLocation(testMode: testMode);
-
-    String zip = await getZipFromPosition(position).catchError((e) {
-      showToast(kCurrentLocationError);
-    });
-
-    if (zip != null) {
-      await sharedPrefs.setString(kPrefsCurrent, zip);
-      user.updateData(current: zip);
     }
 
     setState(() {
@@ -346,11 +376,9 @@ class _HomePageState extends State<HomePage> {
   Widget favoritesTabPage() {
     List<Widget> widgets = [];
 
-    if (user.favorites.length == user.favoritesCurrentWeather.length &&
-        user.favorites.isNotEmpty) {
-      for (var i = 0; i < user.favorites.length; i++) {
-        String zip = user.favorites[i];
-        CurrentWeather currentWeather = user.favoritesCurrentWeather[i];
+    if (user.favoritesCurrentWeather.isNotEmpty) {
+      for (String zip in user.favoritesCurrentWeather.keys) {
+        CurrentWeather currentWeather = user.favoritesCurrentWeather[zip];
 
         widgets.add(
           InkWell(
@@ -769,7 +797,7 @@ class _HomePageState extends State<HomePage> {
             model: currentWeather,
             child: ScopedModel<User>(
               model: user,
-              child: SearchResults(zip: zip),
+              child: WeatherDetails(zip: zip),
             ),
           );
         },
@@ -812,44 +840,52 @@ class _HomePageState extends State<HomePage> {
     var workWeather;
 
     if (home != null && home.isNotEmpty) {
-      homeWeather = await getDataFromWeatherbit(
-              zip: home, weatherType: WeatherType.current)
-          .catchError((e) {
-        setState(() {
-          showLoading = false;
-          showToast(kInvalidZipCode);
-        });
+      homeWeather = user.getCachedCurrentWeather(home);
 
-        return;
-      });
+      if (homeWeather == null) {
+        homeWeather = await getDataFromWeatherbit(
+                zip: home, weatherType: WeatherType.current)
+            .catchError((e) {
+          setState(() {
+            showLoading = false;
+            showToast(kInvalidZipCode);
+          });
+
+          return;
+        });
+      }
     }
 
     if (work != null && work.isNotEmpty) {
-      workWeather = await getDataFromWeatherbit(
-              zip: work, weatherType: WeatherType.current)
-          .catchError((e) {
-        setState(() {
-          showLoading = false;
-          showToast(kInvalidZipCode);
-        });
+      workWeather = user.getCachedCurrentWeather(work);
 
-        return;
-      });
+      if (workWeather == null) {
+        workWeather = await getDataFromWeatherbit(
+                zip: work, weatherType: WeatherType.current)
+            .catchError((e) {
+          setState(() {
+            showLoading = false;
+            showToast(kInvalidZipCode);
+          });
+
+          return;
+        });
+      }
     }
 
     if (home != null && home.isNotEmpty && homeWeather != null) {
-      user.updateData(home: home, homeWeather: homeWeather);
+      user.updateData(homeZip: home, homeWeather: homeWeather);
       await sharedPrefs.setString(kPrefsHome, home);
     } else if (home != user.homeZip) {
-      user.updateData(home: '');
+      user.updateData(homeZip: '', homeWeather: null);
       sharedPrefs.remove(kPrefsHome);
     }
 
     if (work != null && work.isNotEmpty && workWeather != null) {
-      user.updateData(work: work, workWeather: workWeather);
+      user.updateData(workZip: work, workWeather: workWeather);
       await sharedPrefs.setString(kPrefsWork, work);
     } else if (work != user.workZip) {
-      user.updateData(work: '');
+      user.updateData(workZip: '', workWeather: null);
       sharedPrefs.remove(kPrefsWork);
     }
 

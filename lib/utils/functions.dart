@@ -75,7 +75,7 @@ Future<dynamic> getDataFromWeatherbit(
         throw kWeatherDataError;
       }
 
-      return CurrentWeather(data);
+      return CurrentWeather(data, zip);
     } else if (weatherType == WeatherType.forecast) {
       List data = decodedJson['data'];
 
