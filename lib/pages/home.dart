@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/screen_size.dart';
-import 'package:alaskawatch/models/settings_edit.dart';
+import 'package:alaskawatch/models/location_pref_edit.dart';
 import 'package:alaskawatch/models/user.dart';
 import 'package:alaskawatch/pages/weather_details.dart';
 import 'package:alaskawatch/utils/constants.dart';
@@ -23,11 +23,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   ScreenSize screenSize;
   User user;
-  SettingsEdit settingsEdit;
+  LocationPrefEdit locationPrefEdit;
   SharedPreferences sharedPrefs;
 
   bool showSplash = true;
   bool showLoading = false;
+  bool showFavoritesEdit = false;
   bool showLocationPrefEdit = false;
 
   int currentTabIndex = 0;
@@ -392,30 +393,30 @@ class _HomePageState extends State<HomePage> {
             color: kAppSecondaryColor,
           ),
         ),
-//        leading: showEdit
-//            ? IconButton(
-//          icon: Icon(
-//            Icons.close,
-//            color: kAppSecondaryColor,
-//          ),
-//          onPressed: cancelEdit,
-//        )
-//            : null,
-//        actions: <Widget>[
-//          IconButton(
-//            onPressed: () {
-//              if (showEdit) {
-//                saveEdit();
-//              } else {
-//                startEdit();
-//              }
-//            },
-//            icon: Icon(
-//              showEdit ? Icons.done : Icons.edit,
-//              color: kAppSecondaryColor,
-//            ),
-//          ),
-//        ],
+        leading: showFavoritesEdit
+            ? IconButton(
+                icon: Icon(
+                  Icons.close,
+                  color: kAppSecondaryColor,
+                ),
+                onPressed: cancelFavoritesEdit,
+              )
+            : null,
+        actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              if (showFavoritesEdit) {
+                saveFavoritesEdit();
+              } else {
+                startFavoritesEdit();
+              }
+            },
+            icon: Icon(
+              showFavoritesEdit ? Icons.done : Icons.edit,
+              color: kAppSecondaryColor,
+            ),
+          ),
+        ],
         centerTitle: true,
       ),
       body: ScrollConfiguration(
@@ -794,14 +795,14 @@ class _HomePageState extends State<HomePage> {
 
     showLocationPrefEdit = true;
 
-    settingsEdit = SettingsEdit(user: user);
+    locationPrefEdit = LocationPrefEdit(user: user);
 
-    if (settingsEdit.home != null && settingsEdit.home.isNotEmpty) {
-      homeController = TextEditingController(text: settingsEdit.home);
+    if (locationPrefEdit.home != null && locationPrefEdit.home.isNotEmpty) {
+      homeController = TextEditingController(text: locationPrefEdit.home);
     }
 
-    if (settingsEdit.work != null && settingsEdit.work.isNotEmpty) {
-      workController = TextEditingController(text: settingsEdit.work);
+    if (locationPrefEdit.work != null && locationPrefEdit.work.isNotEmpty) {
+      workController = TextEditingController(text: locationPrefEdit.work);
     }
 
     setState(() {});
@@ -888,6 +889,43 @@ class _HomePageState extends State<HomePage> {
     showLocationPrefEdit = false;
     homeController.clear();
     workController.clear();
+    setState(() {});
+  }
+
+  void startFavoritesEdit() {
+    if (showFavoritesEdit) {
+      return;
+    }
+
+    showFavoritesEdit = true;
+
+    locationPrefEdit = LocationPrefEdit(user: user);
+
+    setState(() {});
+  }
+
+  void saveFavoritesEdit() async {
+    if (!showFavoritesEdit) {
+      return;
+    }
+
+    setState(() {
+      showLoading = true;
+    });
+
+    showToast('Settings saved');
+    showLoading = false;
+    showFavoritesEdit = false;
+
+    setState(() {});
+  }
+
+  void cancelFavoritesEdit() {
+    if (!showFavoritesEdit) {
+      return;
+    }
+
+    showFavoritesEdit = false;
     setState(() {});
   }
 }
