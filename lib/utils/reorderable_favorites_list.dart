@@ -1,143 +1,146 @@
+import 'package:alaskawatch/models/favorites_edit.dart';
+import 'package:alaskawatch/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_reorderable_list/flutter_reorderable_list.dart';
 
-class ProfileEditEquipmentList extends StatefulWidget {
-  List<EquipmentItemData> items;
+double itemHeight = 58;
+double itemPadding = 14;
 
-  ProfileEditEquipmentList({this.items});
+class FavoritesItemData {
+  final Key key;
+  final String location;
+  final String zip;
 
-  @override
-  ProfileEditEquipmentListState createState() =>
-      ProfileEditEquipmentListState();
+  FavoritesItemData({this.zip, this.location, this.key});
 }
 
-class ProfileEditEquipmentListState extends State<ProfileEditEquipmentList> {
-  bool isReorderable = false;
+class ReorderableFavoritesList extends StatefulWidget {
+  ReorderableFavoritesList();
+
+  @override
+  ReorderableFavoritesListState createState() =>
+      ReorderableFavoritesListState();
+}
+
+class ReorderableFavoritesListState extends State<ReorderableFavoritesList> {
+  FavoritesEdit favoritesEdit;
 
   @override
   void initState() {
     super.initState();
+
+    favoritesEdit = FavoritesEdit.getModel(context);
   }
 
-  // Returns index of item with given key
   int indexOfKey(Key key) {
-    return widget.items.indexWhere((EquipmentItemData d) => d.key == key);
+    return favoritesEdit.favoritesItems
+        .indexWhere((FavoritesItemData d) => d.key == key);
   }
 
   bool reorderCallback(Key item, Key newPosition) {
     int draggingIndex = indexOfKey(item);
     int newPositionIndex = indexOfKey(newPosition);
 
-    final draggedItem = widget.items[draggingIndex];
+    final draggedItem = favoritesEdit.favoritesItems[draggingIndex];
+
     setState(() {
-      widget.items.removeAt(draggingIndex);
-      widget.items.insert(newPositionIndex, draggedItem);
+      favoritesEdit.favoritesItems.removeAt(draggingIndex);
+      favoritesEdit.favoritesItems.insert(newPositionIndex, draggedItem);
     });
+
     return true;
   }
 
   void reorderDone(Key item) {
-    final draggedItem = widget.items[indexOfKey(item)];
+    final draggedItem = favoritesEdit.favoritesItems[indexOfKey(item)];
   }
 
   Widget build(BuildContext context) {
+    double height = 0;
+    if (favoritesEdit.favoritesItems.length >= 2) {
+      height = (favoritesEdit.favoritesItems.length - 1) * itemPadding;
+    }
+
     return Container(
-      height: widget.items.length * itemHeight +
-          addButtonHeight +
-          (addButtonTopMargin * 2),
+      height: favoritesEdit.favoritesItems.length * itemHeight + height + 5,
       child: ReorderableList(
         onReorder: this.reorderCallback,
         onReorderDone: this.reorderDone,
         child: ListView.builder(
           padding: EdgeInsets.all(0),
-          itemCount: widget.items.length + 1,
+          itemCount: favoritesEdit.favoritesItems.length,
           itemBuilder: (BuildContext context, int index) {
-            return index == widget.items.length
-                ? Center(
-              child: Container(
-                margin: EdgeInsets.only(top: addButtonTopMargin),
-                child: profileEditOutlineButton(
-                    'Add Field', () => addField()),
+            bool isFirst = index == 0;
+            bool isLast = index == favoritesEdit.favoritesItems.length - 1;
+
+            return Container(
+              margin: EdgeInsets.only(bottom: isLast ? 0 : itemPadding),
+              child: FavoritesItem(
+                data: favoritesEdit.favoritesItems[index],
+                isFirst: isFirst,
+                isLast: isLast,
+                onChangedDeleteItem: (value) {
+                  if (value) {
+                    setState(() {
+                      favoritesEdit.favoritesItems.removeAt(index);
+                    });
+                  }
+                },
               ),
-            )
-                : EquipmentItem(
-              data: widget.items[index],
-              isFirst: index == 0,
-              isLast: index == widget.items.length - 1,
-              onChangedText: (value) {
-                setState(() {
-                  widget.items[index].text = value;
-                });
-              },
-              onChangedDeleteItem: (value) {
-                if (value) {
-                  setState(() {
-                    widget.items.removeAt(index);
-                  });
-                }
-              },
             );
           },
         ),
       ),
     );
   }
-
-  void addField() {
-    if (widget.items.isEmpty) {
-      widget.items.add(EquipmentItemData(
-          text: '', key: ValueKey(DateTime.now().microsecondsSinceEpoch)));
-      FocusScope.of(context).requestFocus(FocusNode());
-
-      setState(() {});
-    } else if (widget.items.last.text.isNotEmpty) {
-      widget.items.insert(
-          widget.items.length,
-          EquipmentItemData(
-              text: '', key: ValueKey(DateTime.now().microsecondsSinceEpoch)));
-      FocusScope.of(context).requestFocus(FocusNode());
-
-      setState(() {});
-    }
-  }
 }
 
-class EquipmentItem extends StatelessWidget {
-  EquipmentItem({
-    EquipmentItemData data,
+class FavoritesItem extends StatelessWidget {
+  FavoritesItem({
+    FavoritesItemData data,
     bool isFirst,
     bool isLast,
-    this.onChangedText,
     this.onChangedDeleteItem,
-    TextEditingController textController,
   })  : data = data,
         isFirst = isFirst,
-        isLast = isLast,
-        textController = getCustomTextController(text: data.text);
+        isLast = isLast;
 
-  final EquipmentItemData data;
+  final FavoritesItemData data;
   final bool isFirst;
   final bool isLast;
-  final ValueChanged<String> onChangedText;
   final ValueChanged<bool> onChangedDeleteItem;
-  TextEditingController textController;
 
   Widget buildChild(BuildContext context, ReorderableItemState state) {
     BoxDecoration decoration;
 
     if (state == ReorderableItemState.dragProxy ||
         state == ReorderableItemState.dragProxyFinished) {
-      decoration = BoxDecoration(color: Color(0xD0FFFFFF));
+      decoration = BoxDecoration(
+        color: Colors.white,
+        border: Border.all(
+          width: 2.5,
+          color: kAppSecondaryColor,
+        ),
+        borderRadius: BorderRadius.circular(kAppBorderRadius),
+      );
     } else {
       bool placeholder = state == ReorderableItemState.placeholder;
+      var border;
+
+      if (placeholder) {
+        border = null;
+      } else {
+        border = Border.all(
+          width: 2.5,
+          color: kAppPrimaryColor,
+        );
+      }
+
       decoration = BoxDecoration(
-          border: Border(
-              top: isFirst && !placeholder
-                  ? Divider.createBorderSide(context) //
-                  : BorderSide.none,
-              bottom: isLast && placeholder
-                  ? BorderSide.none //
-                  : Divider.createBorderSide(context)),
-          color: placeholder ? null : Colors.grey[100]);
+        border: border,
+        color: placeholder ? null : Colors.white30,
+        borderRadius: BorderRadius.circular(kAppBorderRadius),
+      );
     }
 
     Widget content = Container(
@@ -153,38 +156,37 @@ class EquipmentItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          top: 14,
-                          bottom: 14,
-                          left: 14,
-                          right: 6,
+                    child: Container(
+                      padding: EdgeInsets.only(left: 12),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${data?.zip} - ${data?.location}',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: kAppPrimaryColor,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
                         ),
-                        child: TextField(
-                          controller: textController,
-                          onChanged: (value) {
-                            onChangedText(value);
-                          },
-                        ),
-                      )),
-                  // Triggers the reordering
+                      ),
+                    ),
+                  ),
                   IconButton(
                     icon: Icon(
                       Icons.delete,
-                      color: Colors.grey[600],
+                      color: Colors.grey[500],
                     ),
                     onPressed: () {
                       onChangedDeleteItem(true);
                     },
+                    padding: EdgeInsets.all(0),
                   ),
                   ReorderableListener(
                     child: Container(
-                      padding: EdgeInsets.only(right: 18.0, left: 18.0),
-                      color: Color(0x08000000),
+                      padding: EdgeInsets.only(right: 12, left: 2),
                       child: Center(
                         child: Icon(
                           Icons.reorder,
-                          color: Color(0xFF888888),
+                          color: Colors.grey[500],
                         ),
                       ),
                     ),

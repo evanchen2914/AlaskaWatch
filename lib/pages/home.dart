@@ -1,12 +1,14 @@
 import 'dart:ui';
 
 import 'package:alaskawatch/models/current_weather.dart';
+import 'package:alaskawatch/models/favorites_edit.dart';
 import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/location_pref_edit.dart';
 import 'package:alaskawatch/models/user.dart';
 import 'package:alaskawatch/pages/weather_details.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
+import 'package:alaskawatch/utils/reorderable_favorites_list.dart';
 import 'package:alaskawatch/utils/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   ScreenSize screenSize;
   User user;
+  FavoritesEdit favoritesEdit;
   LocationPrefEdit locationPrefEdit;
   SharedPreferences sharedPrefs;
 
@@ -388,12 +391,18 @@ class _HomePageState extends State<HomePage> {
         CurrentWeather currentWeather = user.favoritesCurrentWeather[zip];
 
         widgets.add(
-          InkWell(
-            onTap: () {
-              navToWeatherDetails(currentWeather: currentWeather);
-            },
-            child: currentWeatherCard(
-                context: context, currentWeather: currentWeather),
+          Container(
+            margin: EdgeInsets.only(bottom: 20),
+            child: InkWell(
+              onTap: () {
+                navToWeatherDetails(currentWeather: currentWeather);
+              },
+              child: currentWeatherCard(
+                context: context,
+                currentWeather: currentWeather,
+                showZip: true,
+              ),
+            ),
           ),
         );
       }
@@ -440,13 +449,19 @@ class _HomePageState extends State<HomePage> {
           child: ListView(
             children: <Widget>[
               Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenSize.horizontalPadding,
-                  vertical: screenSize.verticalPadding,
+                padding: EdgeInsets.only(
+                  left: screenSize.horizontalPadding,
+                  right: screenSize.horizontalPadding,
+                  top: 20,
                 ),
-                child: Column(
-                  children: widgets,
-                ),
+                child: showFavoritesEdit
+                    ? ScopedModel<FavoritesEdit>(
+                        model: favoritesEdit,
+                        child: ReorderableFavoritesList(),
+                      )
+                    : Column(
+                        children: widgets,
+                      ),
               ),
             ],
           ),
@@ -715,7 +730,9 @@ class _HomePageState extends State<HomePage> {
     ];
 
     if (user.recentSearches.isNotEmpty && keyboardVisible) {
-      for (var zip in user.recentSearches) {
+      List<String> recent = user.recentSearches.reversed.toList();
+
+      for (var zip in recent) {
         widgets.add(
           InkWell(
             onTap: () {
@@ -902,8 +919,7 @@ class _HomePageState extends State<HomePage> {
     }
 
     showFavoritesEdit = true;
-
-    locationPrefEdit = LocationPrefEdit(user: user);
+    favoritesEdit = FavoritesEdit(user: user);
 
     setState(() {});
   }
@@ -912,6 +928,17 @@ class _HomePageState extends State<HomePage> {
     if (!showFavoritesEdit) {
       return;
     }
+
+    List<String> zips = [];
+
+    for (var fav in favoritesEdit.favoritesItems) {
+      zips.add(fav.zip);
+    }
+
+    user.favoritesCurrentWeather
+        .removeWhere((key, value) => !zips.contains(key));
+    user.favorites = []..addAll(zips);
+    await sharedPrefs.setStringList(kPrefsFavorites, user.favorites);
 
     showToast('Settings saved');
     showFavoritesEdit = false;

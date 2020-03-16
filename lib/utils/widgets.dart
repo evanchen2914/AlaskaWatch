@@ -91,7 +91,7 @@ Widget customBox({BuildContext context, Widget child}) {
 }
 
 Widget currentWeatherCard(
-    {BuildContext context, CurrentWeather currentWeather}) {
+    {BuildContext context, CurrentWeather currentWeather, bool showZip}) {
   return Container(
     height: 195,
     padding: EdgeInsets.all(10),
@@ -114,13 +114,28 @@ Widget currentWeatherCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                '${currentWeather?.cityName}, ${currentWeather?.stateCode}',
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    '${currentWeather?.cityName}, ${currentWeather?.stateCode}',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  showZip == null || !showZip
+                      ? Container()
+                      : Text(
+                          currentWeather?.zip.toString(),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                ],
               ),
               SizedBox(height: 5),
               Text(
