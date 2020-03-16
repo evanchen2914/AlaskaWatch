@@ -508,30 +508,35 @@ class _HomePageState extends State<HomePage> {
     Widget locationPrefInfo({String zip, String type}) {
       double fontSize = 18.0;
 
-      return Container(
-        alignment: Alignment.centerLeft,
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 65,
-              child: Text(
-                type,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w600,
+      return InkWell(
+        onTap: () {
+          startEdit();
+        },
+        child: Container(
+          alignment: Alignment.centerLeft,
+          child: Row(
+            children: <Widget>[
+              Container(
+                width: 65,
+                child: Text(
+                  type,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: Text(
-                zip,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w300,
+              Expanded(
+                child: Text(
+                  zip,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w300,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
