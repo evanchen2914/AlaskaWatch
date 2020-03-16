@@ -27,7 +27,6 @@ class _HomePageState extends State<HomePage> {
   SharedPreferences sharedPrefs;
 
   bool showSplash = true;
-  bool showLoading = false;
   bool showFavoritesEdit = false;
   bool showLocationPrefEdit = false;
 
@@ -189,10 +188,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     if (showSplash) {
       return splashScreen();
-    }
-
-    if (showLoading) {
-      return loadingScreen();
     }
 
     screenSize = ScreenSize(context);

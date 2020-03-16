@@ -52,14 +52,14 @@ Widget splashScreen() {
   );
 }
 
-Widget loadingScreen() {
-  return Scaffold(
-    backgroundColor: kAppPrimaryColor,
-    body: Center(
-      child: CircularProgressIndicator(),
-    ),
-  );
-}
+//Widget loadingScreen() {
+//  return Scaffold(
+//    backgroundColor: kAppPrimaryColor,
+//    body: Center(
+//      child: CircularProgressIndicator(),
+//    ),
+//  );
+//}
 
 Widget customBox({BuildContext context, Widget child}) {
   ScreenSize screenSize = ScreenSize(context);

@@ -91,10 +91,6 @@ class _WeatherDetailsState extends State<WeatherDetails> {
 
   @override
   Widget build(BuildContext context) {
-    if (showLoading) {
-      return loadingScreen();
-    }
-
     screenSize = ScreenSize(context);
 
     List<Widget> widgets = [
@@ -104,8 +100,11 @@ class _WeatherDetailsState extends State<WeatherDetails> {
       ),
     ];
 
-    for (var day in forecast?.forecastDailyList) {
-      widgets.add(ExpandableWeatherCard(forecastDaily: day));
+    if (forecast?.forecastDailyList != null &&
+        forecast.forecastDailyList.isNotEmpty) {
+      for (var day in forecast?.forecastDailyList) {
+        widgets.add(ExpandableWeatherCard(forecastDaily: day));
+      }
     }
 
     return Scaffold(
@@ -121,38 +120,40 @@ class _WeatherDetailsState extends State<WeatherDetails> {
         ),
         centerTitle: true,
         actions: <Widget>[
-          PopupMenuButton<String>(
-            onSelected: (value) async {
-              if (value == 'fav') {
-                if (user.favorites.contains(widget.zip)) {
-                  showToast('Location is already in favorites');
-                } else {
-                  user.addFavorite(widget.zip);
-                  user.addFavoriteCurrentWeather(currentWeather);
-                  await sharedPrefs.setStringList(
-                      kPrefsFavorites, user.favorites);
-                  showToast('Added to favorites');
-                }
-              } else if (value == 'share') {
-                Share.share(
-                    'Here\'s the forecast! '
-                    'https://weather.com/weather/tenday/l/${widget.zip}:4:US',
-                    subject: 'forecast');
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem<String>(
-                  value: 'fav',
-                  child: Text('Add to favorites'),
+          showLoading
+              ? Container()
+              : PopupMenuButton<String>(
+                  onSelected: (value) async {
+                    if (value == 'fav') {
+                      if (user.favorites.contains(widget.zip)) {
+                        showToast('Location is already in favorites');
+                      } else {
+                        user.addFavorite(widget.zip);
+                        user.addFavoriteCurrentWeather(currentWeather);
+                        await sharedPrefs.setStringList(
+                            kPrefsFavorites, user.favorites);
+                        showToast('Added to favorites');
+                      }
+                    } else if (value == 'share') {
+                      Share.share(
+                          'Here\'s the forecast! '
+                          'https://weather.com/weather/tenday/l/${widget.zip}:4:US',
+                          subject: 'forecast');
+                    }
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return [
+                      PopupMenuItem<String>(
+                        value: 'fav',
+                        child: Text('Add to favorites'),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'share',
+                        child: Text('Share'),
+                      ),
+                    ];
+                  },
                 ),
-                PopupMenuItem<String>(
-                  value: 'share',
-                  child: Text('Share'),
-                ),
-              ];
-            },
-          ),
         ],
       ),
       body: RefreshIndicator(
@@ -171,10 +172,24 @@ class _WeatherDetailsState extends State<WeatherDetails> {
                 context: context,
               ),
               headerText('Forecast'),
-              Column(
-                children: widgets,
-              ),
-              SizedBox(height: kAppVerticalPadding),
+              showLoading
+                  ? Container(
+                      margin: EdgeInsets.only(top: 20),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(kAppPrimaryColor),
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: <Widget>[
+                        Column(
+                          children: widgets,
+                        ),
+                        SizedBox(height: kAppVerticalPadding),
+                      ],
+                    ),
             ],
           ),
         ),
