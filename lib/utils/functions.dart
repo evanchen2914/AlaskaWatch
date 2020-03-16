@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/forecast.dart';
 import 'package:alaskawatch/utils/constants.dart';
@@ -229,4 +228,105 @@ String parseWindDirection(var direction) {
   } else {
     return null;
   }
+}
+
+String parsePrecipFall(var fall) {
+  if (fall == null) {
+    return null;
+  }
+
+  double precip;
+
+  if (fall is String) {
+    precip = double.parse(fall);
+  } else if (fall is int) {
+    precip = fall.toDouble();
+  } else if (fall is double) {
+    precip = fall;
+  }
+
+  precip /= 25.4;
+
+  String parsed = '';
+
+  if (precip == 0) {
+    parsed = '0';
+  } else {
+    parsed = precip?.toStringAsFixed(2);
+  }
+
+  return '$parsed in.';
+}
+
+String parseUVIndex(var index) {
+  if (index == null) {
+    return null;
+  }
+
+  double uvIndex;
+
+  if (index is String) {
+    uvIndex = double.parse(index);
+  } else if (index is int) {
+    uvIndex = index.toDouble();
+  } else if (index is double) {
+    uvIndex = index;
+  }
+
+  int intIndex = uvIndex.round();
+  String parsed = '';
+
+  if (intIndex >= 1 && intIndex <= 2) {
+    parsed = 'Low';
+  } else if (intIndex >= 3 && intIndex <= 5) {
+    parsed = 'Moderate';
+  } else if (intIndex >= 6 && intIndex <= 7) {
+    parsed = 'High';
+  } else if (intIndex >= 8 && intIndex <= 10) {
+    parsed = 'Very high';
+  } else if (intIndex >= 11) {
+    parsed = 'Extreme';
+  }
+
+  return parsed;
+}
+
+String parseEpoch(var epoch) {
+  if (epoch == null) {
+    return null;
+  }
+
+  int unix;
+
+  if (epoch is String) {
+    unix = int.parse(epoch);
+  } else if (epoch is int) {
+    unix = epoch;
+  } else if (epoch is double) {
+    unix = epoch.toInt();
+  }
+
+  DateTime time = DateTime.fromMillisecondsSinceEpoch(1584702641 * 1000);
+
+  return time?.toString();
+}
+
+String parseVisibility(var vis) {
+  if (vis == null) {
+    return null;
+  }
+
+  double visibility;
+
+  if (vis is String) {
+    visibility = double.parse(vis);
+  } else if (vis is int) {
+    visibility = vis.toDouble();
+  } else if (vis is double) {
+    visibility = vis;
+  }
+
+  double visFinal = visibility * 2.237;
+
+  return '${visFinal?.round()} mi.';
 }

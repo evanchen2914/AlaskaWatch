@@ -29,6 +29,7 @@ dependencies:
   scoped_model: ^1.0.1
   share: ^0.6.3+6
   shared_preferences: ^0.5.6+3
+  weather_icons: ^2.0.1
 
   flutter:
     sdk: flutter

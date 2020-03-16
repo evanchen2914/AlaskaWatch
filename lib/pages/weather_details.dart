@@ -1,3 +1,4 @@
+import 'package:weather_icons/weather_icons.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/forecast.dart';
 import 'package:alaskawatch/models/forecast_daily.dart';
@@ -236,11 +237,12 @@ class ExpandableWeatherCard extends StatelessWidget {
             ),
             Container(
               width: 48,
+              margin: EdgeInsets.only(left: 5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
                   Container(
-                    height: 16,
+                    height: 17,
                     child: Center(
                       child: Image.asset(
                         'assets/droplet.png',
@@ -258,7 +260,7 @@ class ExpandableWeatherCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.keyboard_arrow_down),
+            Container(child: Icon(Icons.keyboard_arrow_down)),
           ],
         ),
       ),
@@ -266,10 +268,171 @@ class ExpandableWeatherCard extends StatelessWidget {
   }
 
   Widget expanded({toggle}) {
+    String description = '${forecastDaily?.weatherDescription}. '
+        'High around ${celsiusToFahrenheit(forecastDaily?.highTemp)} F. '
+        'Winds ${parseWindDirection(forecastDaily?.windDirAbbr)} at '
+        '${windSpeedToMph(forecastDaily?.windSpeed)}. '
+        'Chance of rain ${forecastDaily?.chancePrecip}%.';
+
+    Widget divider() {
+      return Container(
+        height: forecastBorderWidth,
+        width: double.maxFinite,
+        color: kAppPrimaryColor,
+      );
+    }
+
+    Widget category(
+        {String text, String value, IconData weatherIcon, Color iconColor}) {
+      return Flexible(
+        flex: 1,
+        child: Container(
+          height: 75,
+          width: double.maxFinite,
+          padding: EdgeInsets.only(top: 10),
+          child: Container(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  child: BoxedIcon(
+                    weatherIcon,
+                    color: iconColor,
+                    size: 27,
+                  ),
+                ),
+                SizedBox(width: 4),
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          text,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          value,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         collapsed(toggle: () => toggle()),
-        Text('expanded'),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 16,
+          ),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: forecastBorderColor,
+                width: forecastBorderWidth,
+              ),
+            ),
+          ),
+          child: Column(
+            children: <Widget>[
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: fontSize,
+                ),
+              ),
+              SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: kAppPrimaryColor,
+                    width: forecastBorderWidth,
+                  ),
+                  borderRadius: BorderRadius.circular(kAppBorderRadius),
+                ),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          category(
+                            text: 'Rainfall',
+                            value:
+                                '${parsePrecipFall(forecastDaily?.rainfall)}',
+                            weatherIcon: WeatherIcons.raindrop,
+                            iconColor: Colors.blue,
+                          ),
+                          category(
+                            text: 'Snowfall',
+                            value:
+                                '${parsePrecipFall(forecastDaily?.snowfall)}',
+                            weatherIcon: WeatherIcons.snowflake_cold,
+                            iconColor: Colors.lightBlueAccent,
+                          ),
+                        ],
+                      ),
+                      divider(),
+                      Row(
+                        children: <Widget>[
+                          category(
+                            text: 'Humidity',
+                            value: '${forecastDaily?.humidity}%',
+                            weatherIcon: WeatherIcons.humidity,
+                            iconColor: Colors.lightBlue,
+                          ),
+                          category(
+                            text: 'UV Index',
+                            value: '${parseUVIndex(forecastDaily?.uvIndex)}',
+                            weatherIcon: WeatherIcons.day_sunny,
+                            iconColor: Colors.yellow[800],
+                          ),
+                        ],
+                      ),
+                      divider(),
+                      Row(
+                        children: <Widget>[
+                          category(
+                            text: 'Visibility',
+                            value:
+                                '${parseVisibility(forecastDaily?.visibility)}',
+                            weatherIcon: WeatherIcons.dust,
+                            iconColor: Colors.grey[400],
+                          ),
+                          category(
+                            text: 'Wind',
+                            value:
+                                '${windSpeedToMph(forecastDaily?.windSpeed)}',
+                            weatherIcon: WeatherIcons.strong_wind,
+                            iconColor: Colors.grey[400],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

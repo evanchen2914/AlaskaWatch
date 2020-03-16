@@ -11,14 +11,17 @@ class ForecastDaily extends Model {
   var highTemp;
   var lowTemp;
   var chancePrecip;
+  var rainfall;
+  var snowfall;
   var weatherIconCode;
   var weatherCode;
   var weatherDescription;
   var clouds;
   var visibility;
   var uvIndex;
-  var sunrise;
-  var sunset;
+  var windDirAbbr;
+  var windSpeed;
+  var humidity;
 
   ForecastDaily(Map data) {
     updateData(data);
@@ -30,6 +33,8 @@ class ForecastDaily extends Model {
     highTemp = data['high_temp'];
     lowTemp = data['low_temp'];
     chancePrecip = data['pop'];
+    rainfall = data['precip'];
+    snowfall = data['snow'];
     Map weather = data['weather'];
     weatherIconCode = weather['icon'];
     weatherCode = weather['code'];
@@ -37,8 +42,9 @@ class ForecastDaily extends Model {
     clouds = data['clouds'];
     visibility = data['vis'];
     uvIndex = data['uv'];
-    sunrise = data['sunrise_ts'];
-    sunset = data['sunset_ts'];
+    windDirAbbr = data['wind_cdir'];
+    windSpeed = data['wind_spd'];
+    humidity = data['rh'];
 
     // parse valid date
     String origDate = validDate.toString();
