@@ -19,6 +19,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'alert_details.dart';
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -72,7 +74,13 @@ class _HomePageState extends State<HomePage> {
   Future onDidReceiveLocalNotification(
       int id, String title, String body, String payload) async {}
 
-  Future onSelectNotification(String payload) async {}
+  Future onSelectNotification(String payload) async {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) {
+        return AlertDetails();
+      }),
+    );
+  }
 
   void setUp() async {
     bottomNavBarTiles = <BottomNavigationBarItem>[
@@ -687,7 +695,7 @@ class _HomePageState extends State<HomePage> {
                     showNotification();
                   },
                   color: kAppPrimaryColor,
-                  textColor: kAppSecondaryColor,
+                  textColor: Colors.white,
                   child: Text(
                     'Show now',
                     style: TextStyle(
@@ -711,7 +719,7 @@ class _HomePageState extends State<HomePage> {
                             context: context,
                             title: 'Note',
                             body:
-                                'After pressing ok, exit the app to test the notification',
+                                'After pressing ok, exit the app. Wait for the notification, then click on it to view the alert',
                           ),
                         );
                       },
@@ -722,9 +730,33 @@ class _HomePageState extends State<HomePage> {
                     }
                   },
                   color: kAppPrimaryColor,
-                  textColor: kAppSecondaryColor,
+                  textColor: Colors.white,
                   child: Text(
                     'Show in 5 seconds',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              headerText('Alert Page'),
+              Container(
+                height: 42,
+                child: RaisedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return AlertDetails();
+                        },
+                      ),
+                    );
+                  },
+                  color: kAppPrimaryColor,
+                  textColor: Colors.white,
+                  child: Text(
+                    'View',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w500,
