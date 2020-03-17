@@ -421,25 +421,27 @@ class _HomePageState extends State<HomePage> {
   Widget favoritesTabPage() {
     List<Widget> widgets = [];
 
-    if (user.favoritesCurrentWeather.isNotEmpty) {
-      for (String zip in user.favoritesCurrentWeather.keys) {
+    if (user.favorites.isNotEmpty) {
+      for (String zip in user.favorites) {
         CurrentWeather currentWeather = user.favoritesCurrentWeather[zip];
 
-        widgets.add(
-          Container(
-            margin: EdgeInsets.only(bottom: 20),
-            child: InkWell(
-              onTap: () {
-                navToWeatherDetails(currentWeather: currentWeather);
-              },
-              child: currentWeatherCard(
-                context: context,
-                currentWeather: currentWeather,
-                showZip: true,
+        if (currentWeather != null) {
+          widgets.add(
+            Container(
+              margin: EdgeInsets.only(bottom: 20),
+              child: InkWell(
+                onTap: () {
+                  navToWeatherDetails(currentWeather: currentWeather);
+                },
+                child: currentWeatherCard(
+                  context: context,
+                  currentWeather: currentWeather,
+                  showZip: true,
+                ),
               ),
             ),
-          ),
-        );
+          );
+        }
       }
     }
 
@@ -1018,14 +1020,15 @@ class _HomePageState extends State<HomePage> {
     }
 
     List<String> zips = [];
+    user.favorites = [];
 
     for (var fav in favoritesEdit.favoritesItems) {
       zips.add(fav.zip);
+      user.favorites.add(fav.zip);
     }
 
     user.favoritesCurrentWeather
         .removeWhere((key, value) => !zips.contains(key));
-    user.favorites = []..addAll(zips);
     await sharedPrefs.setStringList(kPrefsFavorites, user.favorites);
 
     showToast('Settings saved');
