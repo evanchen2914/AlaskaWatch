@@ -13,6 +13,7 @@ import 'package:alaskawatch/utils/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,6 +44,13 @@ class _HomePageState extends State<HomePage> {
   FocusNode focusNode = FocusNode();
   bool keyboardVisible = false;
 
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  var initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  var initializationSettingsIOS;
+  var initializationSettings;
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +67,11 @@ class _HomePageState extends State<HomePage> {
     workController?.dispose();
   }
 
+  Future onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) async {}
+
+  Future onSelectNotification(String payload) async {}
+
   void setUp() async {
     bottomNavBarTiles = <BottomNavigationBarItem>[
       BottomNavigationBarItem(
@@ -74,6 +87,13 @@ class _HomePageState extends State<HomePage> {
         title: Text('Profile'),
       ),
     ];
+
+    initializationSettingsIOS = IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+    initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
 
     user = User();
 
@@ -642,6 +662,24 @@ class _HomePageState extends State<HomePage> {
                         type: 'Work',
                       ),
               ),
+              headerText('Test Notification'),
+              Container(
+                height: 42,
+                child: RaisedButton(
+                  onPressed: () {
+                    showNotification();
+                  },
+                  color: kAppPrimaryColor,
+                  textColor: kAppSecondaryColor,
+                  child: Text(
+                    'Show Notification',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
               SizedBox(height: screenSize.verticalPadding),
             ],
           ),
@@ -953,5 +991,21 @@ class _HomePageState extends State<HomePage> {
 
     showFavoritesEdit = false;
     setState(() {});
+  }
+
+  void showNotification() async {
+    var scheduledNotificationDateTime = DateTime.now();
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'Default', 'Default', 'Default',
+        importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    NotificationDetails platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.schedule(
+        0,
+        'Weather Alert!',
+        'Severe Thunderstorms',
+        scheduledNotificationDateTime,
+        platformChannelSpecifics);
   }
 }
