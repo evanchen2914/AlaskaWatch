@@ -6,6 +6,7 @@ import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/location_pref_edit.dart';
 import 'package:alaskawatch/models/user.dart';
 import 'package:alaskawatch/pages/weather_details.dart';
+import 'package:alaskawatch/utils/confirmation_dialog.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:alaskawatch/utils/reorderable_favorites_list.dart';
@@ -50,6 +51,7 @@ class _HomePageState extends State<HomePage> {
       AndroidInitializationSettings('@mipmap/ic_launcher');
   var initializationSettingsIOS;
   var initializationSettings;
+  int notificationCount = 0;
 
   @override
   void initState() {
@@ -672,7 +674,42 @@ class _HomePageState extends State<HomePage> {
                   color: kAppPrimaryColor,
                   textColor: kAppSecondaryColor,
                   child: Text(
-                    'Show Notification',
+                    'Show now',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Container(
+                height: 42,
+                child: RaisedButton(
+                  onPressed: () async {
+                    var value = await showDialog(
+                      barrierDismissible: true,
+                      context: context,
+                      builder: (BuildContext dialogContext) {
+                        return Container(
+                          child: ConfirmationDialog(
+                            context: context,
+                            title: 'Note',
+                            body:
+                                'After pressing ok, exit the app to test the notification',
+                          ),
+                        );
+                      },
+                    );
+
+                    if (value != null && value is bool && value) {
+                      showNotification(fiveSeconds: true);
+                    }
+                  },
+                  color: kAppPrimaryColor,
+                  textColor: kAppSecondaryColor,
+                  child: Text(
+                    'Show in 5 seconds',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w500,
@@ -993,16 +1030,22 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  void showNotification() async {
+  void showNotification({bool fiveSeconds}) async {
     var scheduledNotificationDateTime = DateTime.now();
+
+    if (fiveSeconds != null && fiveSeconds) {
+      scheduledNotificationDateTime = DateTime.now().add(Duration(seconds: 5));
+    }
+
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'Default', 'Default', 'Default',
         importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
     NotificationDetails platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    notificationCount++;
     await flutterLocalNotificationsPlugin.schedule(
-        0,
+        notificationCount,
         'Weather Alert!',
         'Severe Thunderstorms',
         scheduledNotificationDateTime,
