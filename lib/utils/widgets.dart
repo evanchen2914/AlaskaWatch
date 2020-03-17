@@ -1,8 +1,6 @@
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/screen_size.dart';
-import 'package:alaskawatch/models/weather_alerts.dart';
 import 'package:alaskawatch/utils/constants.dart';
-import 'package:alaskawatch/utils/weather_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -104,73 +102,53 @@ Widget currentWeatherCard(
     children: <Widget>[
       !showWarning
           ? Container()
-          : InkWell(
-              onTap: () async {
-//                await showDialog(
-//                  barrierDismissible: true,
-//                  context: context,
-//                  builder: (BuildContext dialogContext) {
-//                    return Container(
-//                      child: WeatherDialog(
-//                        context: context,
-//                        title: 'Warning',
-//                        body: 'test',
-//                      ),
-//                    );
-//                  },
-//                );
-              },
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
+          : Container(
+              padding: EdgeInsets.symmetric(
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.red[600],
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(kAppBorderRadius),
+                  topRight: Radius.circular(kAppBorderRadius),
+                  bottomLeft:
+                      Radius.circular(showWarning ? 0 : kAppBorderRadius),
+                  bottomRight:
+                      Radius.circular(showWarning ? 0 : kAppBorderRadius),
+                ),
+              ),
               child: Container(
-//                height: 38,
-                padding: EdgeInsets.symmetric(
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.red[600],
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(kAppBorderRadius),
-                    topRight: Radius.circular(kAppBorderRadius),
-                    bottomLeft:
-                        Radius.circular(showWarning ? 0 : kAppBorderRadius),
-                    bottomRight:
-                        Radius.circular(showWarning ? 0 : kAppBorderRadius),
-                  ),
-                ),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Icon(
-                            Icons.warning,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 7),
-                          Text(
-                            'Weather Alert!',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        alerts,
-                        style: TextStyle(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Icon(
+                          Icons.warning,
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
                         ),
+                        SizedBox(width: 7),
+                        Text(
+                          'Weather Alert!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      alerts,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

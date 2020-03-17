@@ -1,3 +1,6 @@
+import 'package:alaskawatch/models/weather_alerts.dart';
+import 'package:alaskawatch/utils/alerts_dialog.dart';
+import 'package:scoped_model/scoped_model.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/forecast.dart';
@@ -32,6 +35,7 @@ class _WeatherDetailsState extends State<WeatherDetails> {
   CurrentWeather currentWeather;
   Forecast forecast;
   User user;
+  WeatherAlerts weatherAlerts;
   bool showLoading = true;
 
   @override
@@ -45,6 +49,7 @@ class _WeatherDetailsState extends State<WeatherDetails> {
     user = User.getModel(context);
     currentWeather = CurrentWeather.getModel(context);
     sharedPrefs = await SharedPreferences.getInstance();
+    weatherAlerts = WeatherAlerts();
 
     var weather = await getDataFromWeatherbit(
             zip: widget.zip, weatherType: WeatherType.forecast)
@@ -122,6 +127,35 @@ class _WeatherDetailsState extends State<WeatherDetails> {
             ? null
             : <Widget>[
                 IconButton(
+                  tooltip: 'Toggle Alerts',
+                  onPressed: () async {
+                    WeatherAlerts copy = await showDialog(
+                      barrierDismissible: true,
+                      context: context,
+                      builder: (BuildContext dialogContext) {
+                        return Container(
+                          child: ScopedModel<WeatherAlerts>(
+                            model: weatherAlerts,
+                            child: AlertsDialog(context: context),
+                          ),
+                        );
+                      },
+                    );
+
+                    if (copy != null) {
+                      setState(() {
+                        weatherAlerts.alerts = {}..addAll(copy.alerts);
+                      });
+                    }
+                  },
+                  icon: Icon(
+                    weatherAlerts.isEmpty()
+                        ? Icons.add_alert
+                        : Icons.notifications_active,
+                    color: kAppSecondaryColor,
+                  ),
+                ),
+                IconButton(
                   tooltip: 'Toggle Favorite',
                   onPressed: () async {
                     if (user.favorites.contains(widget.zip)) {
@@ -144,13 +178,6 @@ class _WeatherDetailsState extends State<WeatherDetails> {
                     user.favorites.contains(widget.zip)
                         ? Icons.star
                         : Icons.star_border,
-                    color: kAppSecondaryColor,
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Toggle Alerts',
-                  icon: Icon(
-                    Icons.add_alert,
                     color: kAppSecondaryColor,
                   ),
                 ),
