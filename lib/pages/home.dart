@@ -486,7 +486,7 @@ class _HomePageState extends State<HomePage> {
           ],
           border: Border.all(
             color: showLocationPrefEdit ? Colors.grey[300] : kAppPrimaryColor,
-            width: 2,
+            width: 2.5,
           ),
           borderRadius: BorderRadius.circular(kAppBorderRadius),
         ),
@@ -713,14 +713,14 @@ class _HomePageState extends State<HomePage> {
               borderRadius: BorderRadius.circular(kAppBorderRadius),
               borderSide: BorderSide(
                 color: Colors.grey[400],
-                width: 2,
+                width: 2.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(kAppBorderRadius),
               borderSide: BorderSide(
                 color: kAppPrimaryColor,
-                width: 2,
+                width: 2.5,
               ),
             ),
             contentPadding: EdgeInsets.all(0),

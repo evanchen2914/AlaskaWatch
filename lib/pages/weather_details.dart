@@ -15,7 +15,7 @@ import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final forecastBorderColor = Colors.grey[350];
-final forecastBorderWidth = 2.0;
+final forecastBorderWidth = 2.5;
 
 class WeatherDetails extends StatefulWidget {
   final String zip;
@@ -207,6 +207,9 @@ class ExpandableWeatherCard extends StatelessWidget {
   final fontSize = 16.0;
 
   Widget collapsed({toggle}) {
+    bool showWarning =
+        generateWeatherAlerts(forecastDaily: forecastDaily).isNotEmpty;
+
     return InkWell(
       onTap: () => toggle(),
       child: Container(
@@ -275,7 +278,12 @@ class ExpandableWeatherCard extends StatelessWidget {
                 ],
               ),
             ),
-            Container(child: Icon(Icons.keyboard_arrow_down)),
+            Container(
+              child: Icon(
+                showWarning ? Icons.warning : Icons.keyboard_arrow_down,
+                color: showWarning ? Colors.red : Colors.black,
+              ),
+            ),
           ],
         ),
       ),
@@ -288,6 +296,20 @@ class ExpandableWeatherCard extends StatelessWidget {
         'Winds ${parseWindDirection(forecastDaily?.windDirAbbr)} at '
         '${windSpeedToMph(forecastDaily?.windSpeed)}. '
         'Chance of rain ${forecastDaily?.chancePrecip}%.';
+
+    List<String> warnings = generateWeatherAlerts(forecastDaily: forecastDaily);
+    bool showWarning = warnings.isNotEmpty;
+    String alerts = '';
+
+    if (showWarning) {
+      for (var str in warnings) {
+        if (str == 'wind') {
+          alerts += '- High Wind\n';
+        } else if (str == 'uv') {
+          alerts += '- High UV Index\n';
+        }
+      }
+    }
 
     Widget divider() {
       return Container(
@@ -368,6 +390,76 @@ class ExpandableWeatherCard extends StatelessWidget {
           ),
           child: Column(
             children: <Widget>[
+              !showWarning
+                  ? Container()
+                  : Container(
+                      margin: EdgeInsets.only(bottom: 16),
+                      child: Column(
+                        children: <Widget>[
+                          Container(
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: Colors.red[600],
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(kAppBorderRadius),
+                                topRight: Radius.circular(kAppBorderRadius),
+                              ),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.warning,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(width: 7),
+                                  Text(
+                                    'Weather Alerts',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.only(
+                              top: 15,
+                              bottom: 5,
+                              left: 12,
+                              right: 12,
+                            ),
+                            alignment: Alignment.topLeft,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                color: Colors.red[600],
+                                width: 2.5,
+                              ),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(
+                                    showWarning ? 0 : kAppBorderRadius),
+                                topRight: Radius.circular(
+                                    showWarning ? 0 : kAppBorderRadius),
+                                bottomLeft: Radius.circular(kAppBorderRadius),
+                                bottomRight: Radius.circular(kAppBorderRadius),
+                              ),
+                            ),
+                            child: Text(
+                              alerts,
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
               Text(
                 description,
                 style: TextStyle(

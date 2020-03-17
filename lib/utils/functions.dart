@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/forecast.dart';
+import 'package:alaskawatch/models/forecast_daily.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -329,4 +330,44 @@ String parseVisibility(var vis) {
   double visFinal = visibility * 2.237;
 
   return '${visFinal?.round()} mi.';
+}
+
+double parseToDouble(var value) {
+  if (value == null) {
+    return null;
+  }
+
+  double output;
+
+  if (value is String) {
+    output = double.parse(value);
+  } else if (value is int) {
+    output = value.toDouble();
+  } else if (value is double) {
+    output = value;
+  }
+
+  return output;
+}
+
+List<String> generateWeatherAlerts({ForecastDaily forecastDaily}) {
+  List<String> warnings = [];
+  double windSpeed = parseToDouble(forecastDaily?.windSpeed);
+  double uvIndex = parseToDouble(forecastDaily?.uvIndex);
+
+  if (windSpeed != null) {
+    int windSpeedMph = (windSpeed * 2.237).round();
+
+    if (windSpeedMph >= 16) {
+      warnings.add('wind');
+    }
+  }
+
+  if (uvIndex != null) {
+    if (uvIndex >= 6) {
+      warnings.add('uv');
+    }
+  }
+
+  return warnings;
 }
