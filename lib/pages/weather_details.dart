@@ -118,43 +118,56 @@ class _WeatherDetailsState extends State<WeatherDetails> {
             color: kAppSecondaryColor,
           ),
         ),
-        centerTitle: true,
-        actions: <Widget>[
-          showLoading
-              ? Container()
-              : PopupMenuButton<String>(
-                  onSelected: (value) async {
-                    if (value == 'fav') {
-                      if (user.favorites.contains(widget.zip)) {
-                        showToast('Location is already in favorites');
-                      } else {
-                        user.addFavorite(widget.zip);
-                        user.addFavoriteCurrentWeather(currentWeather);
-                        await sharedPrefs.setStringList(
-                            kPrefsFavorites, user.favorites);
-                        showToast('Added to favorites');
-                      }
-                    } else if (value == 'share') {
-                      Share.share(
-                          'Here\'s the forecast! '
-                          'https://weather.com/weather/tenday/l/${widget.zip}:4:US',
-                          subject: 'forecast');
+        actions: showLoading
+            ? null
+            : <Widget>[
+                IconButton(
+                  tooltip: 'Toggle Favorite',
+                  onPressed: () async {
+                    if (user.favorites.contains(widget.zip)) {
+                      user.removeFavorite(widget.zip);
+                      user.removeFavoriteCurrentWeather(widget.zip);
+                      await sharedPrefs.setStringList(
+                          kPrefsFavorites, user.favorites);
+                      showToast('Removed from favorites');
+                    } else {
+                      user.addFavorite(widget.zip);
+                      user.addFavoriteCurrentWeather(currentWeather);
+                      await sharedPrefs.setStringList(
+                          kPrefsFavorites, user.favorites);
+                      showToast('Added to favorites');
                     }
+
+                    setState(() {});
                   },
-                  itemBuilder: (BuildContext context) {
-                    return [
-                      PopupMenuItem<String>(
-                        value: 'fav',
-                        child: Text('Add to favorites'),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'share',
-                        child: Text('Share'),
-                      ),
-                    ];
-                  },
+                  icon: Icon(
+                    user.favorites.contains(widget.zip)
+                        ? Icons.star
+                        : Icons.star_border,
+                    color: kAppSecondaryColor,
+                  ),
                 ),
-        ],
+                IconButton(
+                  tooltip: 'Toggle Alerts',
+                  icon: Icon(
+                    Icons.add_alert,
+                    color: kAppSecondaryColor,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Share',
+                  onPressed: () {
+                    Share.share(
+                        'Here\'s the forecast! '
+                        'https://weather.com/weather/tenday/l/${widget.zip}:4:US',
+                        subject: 'forecast');
+                  },
+                  icon: Icon(
+                    Icons.share,
+                    color: kAppSecondaryColor,
+                  ),
+                ),
+              ],
       ),
       body: RefreshIndicator(
         color: kAppPrimaryColor,

@@ -69,7 +69,7 @@ class User extends Model {
   }
 
   void removeFavoriteCurrentWeather(String zip) {
-    favoritesCurrentWeather.remove(currentWeather.zip);
+    favoritesCurrentWeather.remove(zip);
 
     notifyListeners();
   }
