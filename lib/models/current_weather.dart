@@ -17,6 +17,8 @@ class CurrentWeather extends Model {
   var windDirAbbr;
   var windSpeed;
   var humidity;
+  var uvIndex;
+  var snowfall;
 
   CurrentWeather(Map data, String zip) {
     this.zip = zip;
@@ -35,6 +37,8 @@ class CurrentWeather extends Model {
     windDirAbbr = data['wind_cdir'];
     windSpeed = data['wind_spd'];
     humidity = data['rh'];
+    uvIndex = data['uv'];
+    snowfall = data['snow'];
 
     notifyListeners();
   }
