@@ -1,4 +1,3 @@
-import 'package:alaskawatch/models/current_weather.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:weather_icons/weather_icons.dart';

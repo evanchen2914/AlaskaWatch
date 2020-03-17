@@ -1,8 +1,7 @@
+import 'package:alaskawatch/dialogs/custom_dialog.dart' as customDialog;
 import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/utils/constants.dart';
-import 'package:alaskawatch/utils/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:alaskawatch/dialogs/custom_dialog.dart' as customDialog;
 
 class ConfirmationDialog extends StatefulWidget {
   final BuildContext context;

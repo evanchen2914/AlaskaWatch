@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/forecast.dart';
 import 'package:alaskawatch/models/forecast_daily.dart';

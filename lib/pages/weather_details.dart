@@ -1,12 +1,10 @@
-import 'package:alaskawatch/models/weather_alerts.dart';
 import 'package:alaskawatch/dialogs/alerts_dialog.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:weather_icons/weather_icons.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/forecast.dart';
 import 'package:alaskawatch/models/forecast_daily.dart';
 import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/user.dart';
+import 'package:alaskawatch/models/weather_alerts.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:alaskawatch/utils/widgets.dart';
@@ -14,8 +12,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:scoped_model/scoped_model.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:weather_icons/weather_icons.dart';
 
 final forecastBorderColor = Colors.grey[350];
 final forecastBorderWidth = 2.5;

@@ -1,12 +1,12 @@
 import 'dart:ui';
 
+import 'package:alaskawatch/dialogs/confirmation_dialog.dart';
 import 'package:alaskawatch/models/current_weather.dart';
 import 'package:alaskawatch/models/favorites_edit.dart';
-import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/location_pref_edit.dart';
+import 'package:alaskawatch/models/screen_size.dart';
 import 'package:alaskawatch/models/user.dart';
 import 'package:alaskawatch/pages/weather_details.dart';
-import 'package:alaskawatch/dialogs/confirmation_dialog.dart';
 import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:alaskawatch/utils/reorderable_favorites_list.dart';
