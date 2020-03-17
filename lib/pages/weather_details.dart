@@ -208,7 +208,7 @@ class ExpandableWeatherCard extends StatelessWidget {
 
   Widget collapsed({toggle}) {
     bool showWarning =
-        generateWeatherAlerts(forecastDaily: forecastDaily).isNotEmpty;
+        getFormattedWeatherAlerts(forecastDaily: forecastDaily).isNotEmpty;
 
     return InkWell(
       onTap: () => toggle(),
@@ -297,19 +297,8 @@ class ExpandableWeatherCard extends StatelessWidget {
         '${windSpeedToMph(forecastDaily?.windSpeed)}. '
         'Chance of rain ${forecastDaily?.chancePrecip}%.';
 
-    List<String> warnings = generateWeatherAlerts(forecastDaily: forecastDaily);
-    bool showWarning = warnings.isNotEmpty;
-    String alerts = '';
-
-    if (showWarning) {
-      for (var str in warnings) {
-        if (str == 'wind') {
-          alerts += '- High Wind\n';
-        } else if (str == 'uv') {
-          alerts += '- High UV Index\n';
-        }
-      }
-    }
+    String alerts = getFormattedWeatherAlerts(forecastDaily: forecastDaily);
+    bool showWarning = alerts.isNotEmpty;
 
     Widget divider() {
       return Container(
@@ -427,11 +416,9 @@ class ExpandableWeatherCard extends StatelessWidget {
                             ),
                           ),
                           Container(
-                            padding: EdgeInsets.only(
-                              top: 15,
-                              bottom: 5,
-                              left: 12,
-                              right: 12,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 15,
                             ),
                             alignment: Alignment.topLeft,
                             decoration: BoxDecoration(

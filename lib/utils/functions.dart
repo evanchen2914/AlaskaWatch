@@ -350,10 +350,31 @@ double parseToDouble(var value) {
   return output;
 }
 
-List<String> generateWeatherAlerts({ForecastDaily forecastDaily}) {
+List<String> _generateWeatherAlerts(
+    {CurrentWeather currentWeather, ForecastDaily forecastDaily}) {
   List<String> warnings = [];
-  double windSpeed = parseToDouble(forecastDaily?.windSpeed);
-  double uvIndex = parseToDouble(forecastDaily?.uvIndex);
+
+  if (currentWeather == null && forecastDaily == null) {
+    return warnings;
+  }
+
+  var wind;
+  var uv;
+  var snow;
+
+  if (currentWeather != null && forecastDaily == null) {
+    wind = currentWeather?.windSpeed;
+    uv = currentWeather?.uvIndex;
+    snow = currentWeather?.snowfall;
+  } else if (currentWeather == null && forecastDaily != null) {
+    wind = forecastDaily?.windSpeed;
+    uv = forecastDaily?.uvIndex;
+    snow = forecastDaily?.snowfall;
+  }
+
+  double windSpeed = parseToDouble(wind);
+  double uvIndex = parseToDouble(uv);
+  double snowfall = parseToDouble(snow);
 
   if (windSpeed != null) {
     int windSpeedMph = (windSpeed * 2.237).round();
@@ -369,5 +390,34 @@ List<String> generateWeatherAlerts({ForecastDaily forecastDaily}) {
     }
   }
 
+  if (snowfall != null) {
+    if (snowfall > 0) {
+      warnings.add('snow');
+    }
+  }
+
   return warnings;
+}
+
+String getFormattedWeatherAlerts(
+    {CurrentWeather currentWeather, ForecastDaily forecastDaily}) {
+  List<String> warnings = _generateWeatherAlerts(
+      currentWeather: currentWeather ?? null,
+      forecastDaily: forecastDaily ?? null);
+  bool showWarning = warnings.isNotEmpty;
+  String alerts = '';
+
+  if (showWarning) {
+    for (var str in warnings) {
+      if (str == 'wind') {
+        alerts += '- High Wind\n';
+      } else if (str == 'uv') {
+        alerts += '- High UV Index\n';
+      } else if (str == 'snow') {
+        alerts += '- Snow today\n';
+      }
+    }
+  }
+
+  return alerts.trimRight();
 }

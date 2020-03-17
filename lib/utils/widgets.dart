@@ -97,9 +97,8 @@ Widget customBox({BuildContext context, Widget child}) {
 
 Widget currentWeatherCard(
     {BuildContext context, CurrentWeather currentWeather, bool showZip}) {
-  WeatherAlerts weatherAlerts = WeatherAlerts(currentWeather: currentWeather);
-
-  bool showWarning = false;
+  String alerts = getFormattedWeatherAlerts(currentWeather: currentWeather);
+  bool showWarning = alerts.isNotEmpty;
 
   return Column(
     children: <Widget>[
@@ -107,24 +106,27 @@ Widget currentWeatherCard(
           ? Container()
           : InkWell(
               onTap: () async {
-                await showDialog(
-                  barrierDismissible: true,
-                  context: context,
-                  builder: (BuildContext dialogContext) {
-                    return Container(
-                      child: WeatherDialog(
-                        context: context,
-                        title: 'Warning',
-                        body: 'test',
-                      ),
-                    );
-                  },
-                );
+//                await showDialog(
+//                  barrierDismissible: true,
+//                  context: context,
+//                  builder: (BuildContext dialogContext) {
+//                    return Container(
+//                      child: WeatherDialog(
+//                        context: context,
+//                        title: 'Warning',
+//                        body: 'test',
+//                      ),
+//                    );
+//                  },
+//                );
               },
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               child: Container(
-                height: 38,
+//                height: 38,
+                padding: EdgeInsets.symmetric(
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.red[600],
                   borderRadius: BorderRadius.only(
@@ -137,16 +139,30 @@ Widget currentWeatherCard(
                   ),
                 ),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Icon(
-                        Icons.warning,
-                        color: Colors.white,
+                      Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.warning,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 7),
+                          Text(
+                            'Weather Alert!',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 7),
+                      SizedBox(height: 10),
                       Text(
-                        'Warning! Tap for more info.',
+                        alerts,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
