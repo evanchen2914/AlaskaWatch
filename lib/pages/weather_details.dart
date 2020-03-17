@@ -332,7 +332,7 @@ class ExpandableWeatherCard extends StatelessWidget {
 
   Widget expanded({toggle}) {
     String description = '${forecastDaily?.weatherDescription}. '
-        'High around ${celsiusToFahrenheit(forecastDaily?.highTemp)} F. '
+        'High around ${celsiusToFahrenheit(forecastDaily?.highTemp)}F. '
         'Winds ${parseWindDirection(forecastDaily?.windDirAbbr)} at '
         '${windSpeedToMph(forecastDaily?.windSpeed)}. '
         'Chance of rain ${forecastDaily?.chancePrecip}%.';
