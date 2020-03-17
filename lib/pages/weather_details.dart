@@ -1,5 +1,5 @@
 import 'package:alaskawatch/models/weather_alerts.dart';
-import 'package:alaskawatch/utils/alerts_dialog.dart';
+import 'package:alaskawatch/dialogs/alerts_dialog.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'package:alaskawatch/models/current_weather.dart';

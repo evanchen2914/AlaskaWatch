@@ -4,7 +4,7 @@ import 'package:alaskawatch/utils/constants.dart';
 import 'package:alaskawatch/utils/functions.dart';
 import 'package:alaskawatch/utils/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:alaskawatch/utils/custom_dialog.dart' as customDialog;
+import 'package:alaskawatch/dialogs/custom_dialog.dart' as customDialog;
 import 'package:weather_icons/weather_icons.dart';
 
 class AlertsDialog extends StatefulWidget {
