@@ -251,6 +251,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> refreshHome() async {
+    Position position = await getUserLocation();
+
+    if (position != null) {
+      String zip = await getZipFromPosition(position).catchError((e) {
+        showToast(kCurrentLocationError);
+      });
+
+      if (zip != null) {
+        await sharedPrefs.setString(kPrefsCurrent, zip);
+        user.updateData(currentZip: zip);
+      }
+    }
+
     if (user.currentZip != null && user.currentZip.isNotEmpty) {
       var currentWeather = await getDataFromWeatherbit(
               zip: user.currentZip, weatherType: WeatherType.current)

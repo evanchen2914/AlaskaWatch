@@ -151,7 +151,7 @@ Future<Position> getUserLocation({bool testMode}) async {
   }
 
   Future<Position> getLoc() async {
-    int duration = testMode ? 0 : 5;
+    int duration = testMode != null && testMode ? 0 : 5;
 
     return await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
