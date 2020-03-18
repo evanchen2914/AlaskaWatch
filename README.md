@@ -12,6 +12,7 @@ Build Notes
 App Notes
 
 * I chose to use navy blue and yellow since they are found on the Alaska state flag
+* Data is from WeatherBit https://www.weatherbit.io/api/weather-current and https://www.weatherbit.io/api/weather-forecast-16-day
 * When sharing the forecast, it links to weather.com
 * Sample weather alert page is copy and pasted from a sample one I found online
 * For "severe weather", I created 3 criteria: 1) if wind is greater than 15 mph 2) UV Index is greater than 6 ("high" or up) and 3) if there is snow
